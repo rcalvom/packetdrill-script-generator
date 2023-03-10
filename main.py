@@ -1,43 +1,52 @@
 """ Main script to generate test cases and run """
 
-# Test cases
+# System
+import getopt
+import logging
+import sys
+
+# Configuration
+import configuration
 from test_cases import test_cases
 
-# Generate scripts
+# Script generator
 from generate_scripts import generate_scripts
-
-# Execute tests
 from execute_test import execute_test
+from plot_stats import plot_stats
 
 
-# Constants
-templates_filenames = [
-    'templates/fuzz-template-tcp-established-option.pkt',
-    'templates/fuzz-template-tcp-established.pkt',
-    'templates/fuzz-template-tcp-fin-wait.pkt',
-    'templates/fuzz-template-tcp-last-ack.pkt',
-    'templates/fuzz-template-tcp-listen.pkt',
-    'templates/fuzz-template-tcp-send.pkt', # LWIP fails with this file
-    'templates/fuzz-template-tcp-syn-rcvd.pkt',
-    'templates/fuzz-template-tcp-syn-sent.pkt',
-]
-
-generated_folder = 'scripts/'
-
-packetdrill_command = 'sudo /home/rcalvome/Documents/app/packetdrill/gtests/net/packetdrill/packetdrill --so_filename=/home/rcalvome/Documents/app/rtos-bridge/libfreertos-bridge.so --fm_filename=/home/rcalvome/Documents/app/packet-mutation/libmutation-interface.so --local_ip=125.0.75.1 --remote_ip=125.0.75.5 --verbose --non_fatal=packet --tolerance_usec=1000000 {0}'
-
-#target = 'sudo /home/rcalvome/Documents/app/lwip/build/contrib/ports/unix/example_app/example_app'
-target = 'sudo /home/rcalvome/Documents/app/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Echo_Posix/build/posix_demo'
+def main(generate, execute, stats):
+    """
+    Main execution function. start the processes
+    """
+    if generate:
+        generate_scripts(test_cases, configuration.templates_filenames)
+    if execute:
+        execute_test(configuration.generated_folder, configuration.packetdrill_command, configuration.target_command)
+    if stats:
+        plot_stats()
 
 
-def main():
-    # Generate Packetdrill script from test cases file
-    generate_scripts(test_cases, templates_filenames)
-    # Excecute tests
-    execute_test(generated_folder, packetdrill_command, target)
-    # Generate stats of performance
-    #stats()
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    """
+    Main execution. Execute taking command line args
+    """
+    generate = False
+    execute = False
+    stats = False
+    argument_list = sys.argv[1:]
+    options = 'ges'
+    long_options = ['generate', 'execute', 'stats']
+    logging.basicConfig(format="%(message)s")
+    try:
+        arguments, values = getopt.getopt(argument_list, options, long_options)
+        for current_argument, current_value in arguments:
+            if current_argument in ('-g', '--generate'):
+                generate = True
+            elif current_argument in ('-e', '--execute'):
+                execute = True
+            elif current_argument in ('-s', '--stats'):
+                stats = True
+        main(generate, execute, stats)
+    except getopt.error as err:
+        logging.error(err)

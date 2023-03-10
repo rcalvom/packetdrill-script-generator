@@ -1,8 +1,114 @@
 """ Functions to generate Packetdrill scripts based on test cases list """
 
-# Copy
+# System
+import logging
 import copy
 
+# Constants
+header_fields = {
+    "src_port": {
+        "protocol": "tcp",
+        "field": "src_port",
+        "size": 16,
+        "offset": 0
+    },
+    "dst_port": {
+        "protocol": "tcp",
+        "field": "dst_port",
+        "size": 16,
+        "offset": 0
+    },
+    "seq_num": {
+        "protocol": "tcp",
+        "field": "seq_num",
+        "size": 32,
+        "offset": 0
+    },
+    "ack_num": {
+        "protocol": "tcp",
+        "field": "ack_num",
+        "size": 32,
+        "offset": 0
+    },
+    "data_off": {
+        "protocol": "tcp",
+        "field": "tcp_hdr_len",
+        "size": 4,
+        "offset": 0
+    },
+    "tcp_reserved": {
+        "protocol": "tcp",
+        "field": "tcp_hdr_len",
+        "size": 4,
+        "offset": 4
+    },
+    "crw_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 0
+    },
+    "ece_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 1
+    },
+    "urg_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 2
+    },
+    "ack_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 3
+    },
+    "psh_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 4
+    },
+    "rst_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 5
+    },
+    "syn_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 6
+    },
+    "fin_flag": {
+        "protocol": "tcp",
+        "field": "flags",
+        "size": 1,
+        "offset": 7
+    },
+    "win_size": {
+        "protocol": "tcp",
+        "field": "win_size",
+        "size": 16,
+        "offset": 0
+    },
+    "tcp_checksum": {
+        "protocol": "tcp",
+        "field": "tcp_checksum",
+        "size": 16,
+        "offset": 0
+    },
+    "urg_pointer": {
+        "protocol": "tcp",
+        "field": "urg_pointer",
+        "size": 16,
+        "offset": 0
+    }
+}
 
 def generate_scripts(test_cases, templates_filenames):
     """
@@ -21,9 +127,9 @@ def create_individual_cases(test_case):
     """
     result = [[]]
     for mutation in test_case["mutations"]: 
-        c = copy.deepcopy(result)
+        result_copy = copy.deepcopy(result)
         for i in range(len(mutation["values"]) - 1):
-            result = result + c
+            result = result + result_copy
         for index, value in enumerate(mutation["values"]):
             test = {}
             if mutation["field"] in ['crw_flag', 'ece_flag', 'urg_flag', 'ack_flag', 'psh_flag', 'rst_flag', 'syn_flag', 'fin_flag']:

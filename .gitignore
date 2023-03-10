@@ -2,3 +2,4 @@ success.txt
 failure.txt
 __pycache__/
 scripts/*
+test_cases copy.py
