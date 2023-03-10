@@ -1,8 +1,12 @@
 """ Functions to generate Packetdrill scripts based on test cases list """
 
 # System
-import logging
 import copy
+import shutil
+import os
+
+# Script Generator
+import configuration
 
 # Constants
 header_fields = {
@@ -10,102 +14,119 @@ header_fields = {
         "protocol": "tcp",
         "field": "src_port",
         "size": 16,
+        "length": 16,
         "offset": 0
     },
     "dst_port": {
         "protocol": "tcp",
         "field": "dst_port",
         "size": 16,
+        "length": 16,
         "offset": 0
     },
     "seq_num": {
         "protocol": "tcp",
         "field": "seq_num",
         "size": 32,
+        "length": 32,
         "offset": 0
     },
     "ack_num": {
         "protocol": "tcp",
         "field": "ack_num",
         "size": 32,
+        "length": 32,
         "offset": 0
     },
     "data_off": {
         "protocol": "tcp",
         "field": "tcp_hdr_len",
-        "size": 4,
+        "size": 8,
+        "length": 4,
         "offset": 0
     },
     "tcp_reserved": {
         "protocol": "tcp",
         "field": "tcp_hdr_len",
-        "size": 4,
+        "size": 8,
+        "length": 4,
         "offset": 4
     },
     "crw_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 0
     },
     "ece_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 1
     },
     "urg_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 2
     },
     "ack_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 3
     },
     "psh_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 4
     },
     "rst_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
-        "offset": 5
+        "size": 8,
+        "length": 1,
+        "offset": 5,
     },
     "syn_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 6
     },
     "fin_flag": {
         "protocol": "tcp",
         "field": "flags",
-        "size": 1,
+        "size": 8,
+        "length": 1,
         "offset": 7
     },
     "win_size": {
         "protocol": "tcp",
         "field": "win_size",
         "size": 16,
+        "length": 16,
         "offset": 0
     },
     "tcp_checksum": {
         "protocol": "tcp",
         "field": "tcp_checksum",
         "size": 16,
+        "length": 16,
         "offset": 0
     },
     "urg_pointer": {
         "protocol": "tcp",
         "field": "urg_pointer",
         "size": 16,
+        "length": 16,
         "offset": 0
     }
 }
@@ -114,11 +135,16 @@ def generate_scripts(test_cases, templates_filenames):
     """
     Generate scripts from test cases and templates
     """
+    remove_scripts()
     templates = preload_templates(templates_filenames)
     for test_case in test_cases:
         single_cases = create_individual_cases(test_case)
         for index, case in enumerate(single_cases):
             generate_case(case, test_case["name"], templates, index)
+
+def remove_scripts():
+    shutil.rmtree(configuration.generated_folder)
+    os.mkdir(configuration.generated_folder)
 
 
 def create_individual_cases(test_case):
@@ -126,72 +152,42 @@ def create_individual_cases(test_case):
     Generates test data to represent every script from a single test case
     """
     result = [[]]
-    for mutation in test_case["mutations"]: 
+    for mutation in test_case["mutations"]:
+        if isinstance(mutation["values"], str) and mutation["values"] == "all":
+            mutation["values"] = []
+            for i in range(pow(2, header_fields[mutation["field"]]["length"])):
+                mutation["values"].append(i)
         result_copy = copy.deepcopy(result)
         for i in range(len(mutation["values"]) - 1):
-            result = result + result_copy
+            result = result + copy.deepcopy(result_copy)
         for index, value in enumerate(mutation["values"]):
             test = {}
-            if mutation["field"] in ['crw_flag', 'ece_flag', 'urg_flag', 'ack_flag', 'psh_flag', 'rst_flag', 'syn_flag', 'fin_flag']:
-                test["name"] = test_case["name"]
-                test["header"] = "tcp"
-                test["field"] = 'flags'               
-            if mutation["field"] == 'crw_flag':
-                test["value"] = format_value(value * 0x80, mutation["size"])
-            elif mutation["field"] == 'ece_flag':
-                test["value"] = format_value(value * 0x40, mutation["size"])
-            elif mutation["field"] == 'urg_flag':
-                test["value"] = format_value(value * 0x20, mutation["size"])
-            elif mutation["field"] == 'ack_flag':
-                test["value"] = format_value(value * 0x10, mutation["size"])
-            elif mutation["field"] == 'psh_flag':
-                test["value"] = format_value(value * 0x08, mutation["size"])
-            elif mutation["field"] == 'rst_flag':
-                test["value"] = format_value(value * 0x04, mutation["size"])
-            elif mutation["field"] == 'syn_flag':
-                test["value"] = format_value(value * 0x02, mutation["size"])
-            elif mutation["field"] == 'fin_flag':
-                test["value"] = format_value(value * 0x01, mutation["size"])
-            elif mutation["field"] == 'data_off':
-                test["value"] = format_value(value * 0x1000, mutation["size"])
-            elif mutation["field"] == 'reserved':
-                test["value"] = format_value(value * 0x0100, mutation["size"])
-            else:
-                test["name"] = test_case["name"]
-                test["header"] = "tcp"
-                test["field"] = mutation["field"]
-                test["value"] = format_value(value, mutation["size"])
+            test["name"] = test_case["name"]
+            test["header"] = header_fields[mutation["field"]]["protocol"]
+            test["field"] = header_fields[mutation["field"]]["field"]
+            test["value"] = format_value(value, header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["length"], header_fields[mutation["field"]]["offset"])
             for i in range(len(result)):
                 if (i * len(mutation["values"])) // len(result) == index:
-                    if test["field"] == 'flags':
-                        flag = False
-                        for r in result[i]:
-                            if r["field"] == 'flags':
-                                r["value"] = format_value(int(r["value"], 16) | int(test["value"], 16), 8)
-                                flag = True
-                                break
-                        if flag == False:
-                            result[i].append(test)
-                    else:
+                    flag = False
+                    for r in result[i]:
+                        if r["field"] == header_fields[mutation["field"]]["field"]:
+                            r["value"] = format_value(int(r["value"], 16) | int(test["value"], 16), header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["size"], 0)
+                            flag = True
+                            break
+                    if not flag:
                         result[i].append(test)
     return result
     
 
-def format_value(value, size):
+def format_value(value, size, length, offset):
     """ 
     Format a value in the corresponding hexadecimal 
     """
-    if size % 4 == 0:
-        s = size
-    elif size % 4 == 1:
-        s = size + 3
-    elif size % 4 == 2:
-        s = size + 2
-    elif size % 4 == 3:
-        s = size + 1
-    if (s // 4) % 2 == 1:
-        s = s + 4
-    return ("0x{:0" + str(s//4) + "x}").format(value)
+    if size % 8 == 0:
+        return ("0x{:0" + str(size // 4) + "X}").format(value * pow(2, size - (length + offset)))
+    else:
+        return ("0x{:0" + str(size + (size - (size % 8)) // 4) + "X}").format(value * pow(2, size - (length + offset)))
+
 
 def generate_case(test_case, name, templates, index):
     """
@@ -200,7 +196,7 @@ def generate_case(test_case, name, templates, index):
     for i, template in enumerate(templates):
         expression = generate_expresion(test_case)
         content = template.format(expression)
-        script_filename = "scripts/packetdrill_script_{0}_{1}_{2}.pkt".format(name, i, index)
+        script_filename = "{0}packetdrill_script_{1}_{2}_{3}.pkt".format(configuration.generated_folder, name, i, index)
         with open(script_filename, "w") as script_file:
             script_file.write(content)
         
