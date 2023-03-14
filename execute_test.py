@@ -1,13 +1,9 @@
 """ Functions to execute Packetdrill """
 
 # System
-import os
-
-# Threading
+import subprocess
 import threading
-
-# Pandas
-#import pandas as pd
+import os
 
 
 def execute_target(target):
@@ -17,12 +13,24 @@ def execute_target(target):
     else:
         print("Target 0")
 
+# TODO: Fix this function
+def execute_tests(folder, command, target):
+    scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+    for script in scripts:
+        return_code = 0
+        try:
+            return_code = subprocess.check_call(args=command.format().split(" "), timeout=1, shell=True)
+        except subprocess.CalledProcessError as err:
+            print(err)
+        if return_code != 0:
+            print("Error in command")
+
 
 def execute_test(folder, command, target):
     scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
     for script in scripts:
-        #thread = threading.Thread(target=execute_target, args=(target,))
-        #thread.start()
+        thread = threading.Thread(target=execute_target, args=(target,))
+        thread.start()
         print("Testing: ", script)
         return_value = os.system(command.format(script))
         if return_value != 0:

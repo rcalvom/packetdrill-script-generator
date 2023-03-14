@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """ Main script to generate test cases and run """
 
 # System

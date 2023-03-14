@@ -128,6 +128,111 @@ header_fields = {
         "size": 16,
         "length": 16,
         "offset": 0
+    },
+    "ip_version": {
+        "protocol": "ip",
+        "field": "version_ihl",
+        "size": 8,
+        "length": 4,
+        "offset": 0
+    },
+    "ihl": {
+        "protocol": "ip",
+        "field": "version_ihl",
+        "size": 8,
+        "length": 4,
+        "offset": 4
+    },
+    "dscp": {
+        "protocol": "ip",
+        "field": "dscp_esn",
+        "size": 8,
+        "length": 6,
+        "offset": 0
+    },
+    "ecn": {
+        "protocol": "ip",
+        "field": "dscp_esn",
+        "size": 8,
+        "length": 2,
+        "offset": 6
+    },
+    "tot_len": {
+        "protocol": "ip",
+        "field": "tot_len",
+        "size": 16,
+        "length": 16,
+        "offset": 0
+    },
+    "iden": {
+        "protocol": "ip",
+        "field": "iden",
+        "size": 16,
+        "length": 16,
+        "offset": 0
+    },
+    "reserved_flag": {
+        "protocol": "ip",
+        "field": "flags_fragoff",
+        "size": 16,
+        "length": 1,
+        "offset": 0
+    },
+    "df_flag": {
+        "protocol": "ip",
+        "field": "flags_fragoff",
+        "size": 16,
+        "length": 1,
+        "offset": 1
+    },
+    "mf_flag": {
+        "protocol": "ip",
+        "field": "flags_fragoff",
+        "size": 16,
+        "length": 1,
+        "offset": 2
+    },
+    "fragment_offset": {
+        "protocol": "ip",
+        "field": "flags_fragoff",
+        "size": 16,
+        "length": 1,
+        "offset": 3
+    },
+    "time_to_live": { # TODO: ttl?
+        "protocol": "ip",
+        "field": "protocol",
+        "size": 16,
+        "length": 8,
+        "offset": 0
+    },
+    "protocol": {
+        "protocol": "ip",
+        "field": "protocol",
+        "size": 16,
+        "length": 8,
+        "offset": 8
+    },
+    "ip_checksum": {
+        "protocol": "ip",
+        "field": "ip_checksum",
+        "size": 16,
+        "length": 16,
+        "offset": 0
+    },
+    "src_ip": {
+        "protocol": "ip",
+        "field": "ip_checksum",
+        "size": 32,
+        "length": 32,
+        "offset": 0
+    },
+    "dest_ip": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 32,
+        "length": 32,
+        "offset": 0
     }
 }
 
