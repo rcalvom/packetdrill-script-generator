@@ -244,10 +244,12 @@ def generate_scripts(test_cases, templates_filenames):
     templates = preload_templates(templates_filenames)
     for test_case in test_cases:
         single_cases = create_individual_cases(test_case)
+        # Each case leads to templates number of script
         for index, case in enumerate(single_cases):
             generate_case(case, test_case["name"], templates, index)
 
 def remove_scripts():
+    # Remove generated_folder only if it exists
     shutil.rmtree(configuration.generated_folder)
     os.mkdir(configuration.generated_folder)
 
@@ -258,27 +260,45 @@ def create_individual_cases(test_case):
     """
     result = [[]]
     for mutation in test_case["mutations"]:
+
+        # If values field is "all", we update the values array with all possible values
         if isinstance(mutation["values"], str) and mutation["values"] == "all":
             mutation["values"] = []
             for i in range(pow(2, header_fields[mutation["field"]]["length"])):
                 mutation["values"].append(i)
+        # Why the use of deep copy?
         result_copy = copy.deepcopy(result)
         for i in range(len(mutation["values"]) - 1):
             result = result + copy.deepcopy(result_copy)
+
+        # For each value in the values array, generate test objects for that value 
         for index, value in enumerate(mutation["values"]):
             test = {}
             test["name"] = test_case["name"]
-            test["header"] = header_fields[mutation["field"]]["protocol"]
-            test["field"] = header_fields[mutation["field"]]["field"]
-            test["value"] = format_value(value, header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["length"], header_fields[mutation["field"]]["offset"])
-            for i in range(len(result)):
+            test["opcode"] = test_case["opcode"]
+            test["header"] = test_case["protocol"]
+            if (test_case["opcode"] == "rep"):
+                test["field"] = header_fields[mutation["field"]]["field"]
+                test["value"] = format_value(value, header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["length"], header_fields[mutation["field"]]["offset"])
+            elif (test_case["opcode"] == "ins"):
+                test["field"] = test_case["offset"]
+                test["value"] = value
+            elif (test_case["opcode"] == "trun"):
+                test["field"] = value
+                test["value"] = 0
+            
+
+            # What does this do?
+            for i in range(len(result)):    # 0, 1
                 if (i * len(mutation["values"])) // len(result) == index:
                     flag = False
-                    for r in result[i]:
-                        if r["field"] == header_fields[mutation["field"]]["field"]:
-                            r["value"] = format_value(int(r["value"], 16) | int(test["value"], 16), header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["size"], 0)
-                            flag = True
-                            break
+
+                    if test_case["opcode"] == "rep":
+                        for r in result[i]:
+                            if r["field"] == header_fields[mutation["field"]]["field"]:
+                                r["value"] = format_value(int(r["value"], 16) | int(test["value"], 16), header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["size"], 0)
+                                flag = True
+                                break
                     if not flag:
                         result[i].append(test)
     return result
@@ -310,7 +330,7 @@ def generate_expresion(test_case): #TODO: Hardcoded header
     """
     Generate the mut expression to add into the template
     """
-    return "{{{0}}}".format(" ; ".join(["{0} {1} {2} {3}".format("rep", x["header"], x["field"], x["value"]) for x in test_case]))
+    return "{{{0}}}".format(" ; ".join(["{0} {1} {2} {3}".format(x["opcode"], x["header"], x["field"], x["value"]) for x in test_case]))
     
 
 def preload_templates(filenames):
