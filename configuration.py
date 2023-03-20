@@ -25,9 +25,12 @@ packetdrill_command =   (
                             '--verbose '
                             '--non_fatal=packet '
                             '--tolerance_usec=1000000 '
-                            '{0} '
+                            '{0}'
                         )
 # Target command. command to execute target system
+# target_command =    (
+#                         '/home/rcalvome/Documents/app/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Echo_Posix/build/posix_demo '
+#                     )
 target_command =    (
-                        '/home/rcalvome/Documents/app/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Echo_Posix/build/posix_demo '
+                        '/home/rcalvome/Documents/app/lwip/build/contrib/ports/unix/example_app/example_app '
                     )
