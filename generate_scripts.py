@@ -5,6 +5,9 @@ import copy
 import shutil
 import os
 
+# Import the inotify library
+from pyinotify import WatchManager, Notifier, ProcessEvent, IN_CREATE, IN_ISDIR, ALL_EVENTS
+
 # Script Generator
 import configuration
 
@@ -236,17 +239,66 @@ header_fields = {
     }
 }
 
+notifier: Notifier = None
+script_list = {}
+scripts_written = False;
+debug = True
+
+def debug_print(txt):
+    if debug:
+        print(txt)
+
+def setup_watch_manager(watch_dir):
+    global notifier
+    # Set up the watch manager and notifier
+    wm = WatchManager()
+    mask = IN_CREATE 
+
+    wm.add_watch(watch_dir, mask, auto_add=True)
+
+
+    notifier = Notifier(wm, EventHandler())
+
+
 def generate_scripts(test_cases, templates_filenames):
     """
     Generate scripts from test cases and templates
     """
+    global script_list, scripts_written
+
     remove_scripts()
+    setup_watch_manager(configuration.generated_folder)
     templates = preload_templates(templates_filenames)
     for test_case in test_cases:
         single_cases = create_individual_cases(test_case)
         # Each case leads to templates number of script
         for index, case in enumerate(single_cases):
-            generate_case(case, test_case["name"], templates, index)
+            script_list = generate_case(case, test_case["name"], templates, index)
+
+            debug_print("Script_list has been generated")
+
+            scripts_written = False
+
+            while not scripts_written:
+
+                try:
+                    debug_print("Is this printed 1")
+                    # Wait for events to occur
+                    if notifier.check_events(timeout=10000):
+                        debug_print("Is this printed 2")
+                        # Read any available events
+                        notifier.read_events()
+                        # Call the respective event handler
+                        notifier.process_events()
+                        
+                    
+                except KeyboardInterrupt:
+                    # Stop the monitoring if Ctrl-C is pressed
+                    notifier.stop()
+                    exit()
+                
+
+
 
 def remove_scripts():
     # Remove generated_folder only if it exists
@@ -318,12 +370,16 @@ def generate_case(test_case, name, templates, index):
     """
     Write the script to a file
     """
+    script_list = {}
     for i, template in enumerate(templates):
         expression = generate_expresion(test_case)
         content = template.format(expression)
-        script_filename = "{0}packetdrill_script_{1}_{2}_{3}.pkt".format(configuration.generated_folder, name, i, index)
-        with open(script_filename, "w") as script_file:
-            script_file.write(content)
+        script_filename = "packetdrill_script_{0}_{1}_{2}.pkt".format(name, i, index)
+        script_list[script_filename] = content
+
+        # with open(script_filename, "w") as script_file:
+        #     script_file.write(content)
+    return script_list
         
 
 def generate_expresion(test_case): #TODO: Hardcoded header
@@ -342,4 +398,32 @@ def preload_templates(filenames):
         with open(template, "r") as template_file:
             templates.append(template_file.read())
     return templates
-        
+
+
+# Define the event handler
+class EventHandler(ProcessEvent):
+    def process_IN_CREATE(self, event):
+
+        global scripts_written
+        debug_print(f"Event called for pathname: {event.pathname}")
+
+        if not event.mask & IN_ISDIR and os.path.basename(event.pathname) == "index.txt":
+            # This method is called when a new file is created in the directory
+            # if event.name == 'myfile.txt':
+            #     print("My file was created: %s" % os.path.join(event.path, event.name))
+
+            # We copy because script_list can get updated any time
+            script_list_copy = copy.deepcopy(script_list)
+
+            for script_name in script_list_copy:
+                script_content = script_list_copy[script_name]
+                script_path = os.path.join(event.path, script_name)
+
+                with open(script_path, "w") as script_file:
+                    script_file.write(script_content)
+
+            # We tell the consumer that we are done writing 
+            with open(event.pathname, 'w') as event_file:
+                event_file.write("Completed")
+
+            scripts_written = True
