@@ -1,4 +1,6 @@
-success.txt
-failure.txt
+error_packetdrill.log
+error_target.log
+success.log
+test.py
 __pycache__/
 scripts/*

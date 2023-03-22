@@ -10,7 +10,7 @@ import configuration
 
 # Constants
 header_fields = {
-    "src_port": {
+    "src_port": { # TCP Header
         "protocol": "tcp",
         "field": "src_port",
         "size": 16,
@@ -40,14 +40,14 @@ header_fields = {
     },
     "data_off": {
         "protocol": "tcp",
-        "field": "tcp_hdr_len",
+        "field": "data_off",
         "size": 8,
         "length": 4,
-        "offset": 0
+        "offset": 4
     },
     "tcp_reserved": {
         "protocol": "tcp",
-        "field": "tcp_hdr_len",
+        "field": "reserved",
         "size": 8,
         "length": 4,
         "offset": 4
@@ -117,7 +117,7 @@ header_fields = {
     },
     "tcp_checksum": {
         "protocol": "tcp",
-        "field": "tcp_checksum",
+        "field": "checksum",
         "size": 16,
         "length": 16,
         "offset": 0
@@ -199,9 +199,9 @@ header_fields = {
         "length": 1,
         "offset": 3
     },
-    "time_to_live": { # TODO: ttl?
+    "time_to_live": { 
         "protocol": "ip",
-        "field": "protocol",
+        "field": "TTL",
         "size": 16,
         "length": 8,
         "offset": 0
@@ -220,18 +220,74 @@ header_fields = {
         "length": 16,
         "offset": 0
     },
-    "src_ip": {
+    "src_addr": {
         "protocol": "ip",
         "field": "ip_checksum",
         "size": 32,
         "length": 32,
         "offset": 0
     },
-    "dest_ip": {
+    "dst_addr": {
         "protocol": "ip",
         "field": "dest_ip",
         "size": 32,
         "length": 32,
+        "offset": 0
+    },
+    "version_ipv6": { # IPv6 Headers
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 4,
+        "length": 4,
+        "offset": 0
+    },
+    "traffic_class": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 6,
+        "length": 6,
+        "offset": 0
+    },
+    "flow_label": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 20,
+        "length": 20,
+        "offset": 0
+    },
+    "payload_length": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 16,
+        "length": 16,
+        "offset": 0
+    },
+    "next_header": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 8,
+        "length": 8,
+        "offset": 0
+    },
+    "hop_limit": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 8,
+        "length": 8,
+        "offset": 0
+    },
+    "source_address_IPv6": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 128,
+        "length": 128,
+        "offset": 0
+    },
+    "destination_address_IPv6": {
+        "protocol": "ip",
+        "field": "dest_ip",
+        "size": 128,
+        "length": 128,
         "offset": 0
     }
 }

@@ -75,24 +75,24 @@ test_cases = [
             }
         ]
     },
-    # {
-    #     "name": "ip_flags",
-    #     "mutations" : [
-    #         {
-    #             "field": "flags",
-    #             "values": [
-    #                 0,
-    #                 1,
-    #                 2,
-    #                 3,
-    #                 4,
-    #                 5,
-    #                 6,
-    #                 7
-    #             ]
-    #         }
-    #     ]
-    # },
+    {
+        "name": "ip_flags",
+        "mutations" : [
+            {
+                "field": "flags",
+                "values": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7
+                ]
+            }
+        ]
+    },
     {
         "name": "fragment_offset",
         "mutations" : [
@@ -136,7 +136,7 @@ test_cases = [
         "name": "ip_checksum",
         "mutations" : [
             {
-                "field": "ip_checksum",
+                "field": "checksum",
                 "values": [
                     0x0000,
                     0xFFFF
