@@ -1,12 +1,13 @@
 """ Functions to generate Packetdrill scripts based on test cases list """
 
 # System
-import copy
+import logging
 import shutil
+import copy
 import os
 
 # Inotify
-from pyinotify import WatchManager, Notifier, ProcessEvent, IN_CREATE, IN_ISDIR, ALL_EVENTS
+from pyinotify import WatchManager, Notifier, ProcessEvent, IN_CREATE, IN_ISDIR
 
 # Script Generator
 import configuration
@@ -295,69 +296,44 @@ header_fields = {
     }
 }
 
+# Variables
 notifier: Notifier = None
 script_list = {}
-scripts_written = False;
+scripts_written = False
 debug = True
-
-def debug_print(txt):
-    if debug:
-        print(txt)
-
-def setup_watch_manager(watch_dir):
-    global notifier
-    # Set up the watch manager and notifier
-    wm = WatchManager()
-    mask = IN_CREATE 
-
-    wm.add_watch(watch_dir, mask, auto_add=True)
-
-
-    notifier = Notifier(wm, EventHandler())
 
 
 def generate_scripts(test_cases, templates_filenames):
     """
     Generate scripts from test cases and templates
     """
-    global script_list, scripts_written
-
+    global script_list
+    global scripts_written
     remove_scripts()
     setup_watch_manager(configuration.generated_folder)
     templates = preload_templates(templates_filenames)
     for test_case in test_cases:
         single_cases = create_individual_cases(test_case)
-        # Each case leads to templates number of script
         for index, case in enumerate(single_cases):
             script_list = generate_case(case, test_case["name"], templates, index)
-
-            debug_print("Script_list has been generated")
-
+            logging.info("Script_list has been generated")
             scripts_written = False
-
             while not scripts_written:
-
                 try:
-                    debug_print("Is this printed 1")
-                    # Wait for events to occur
+                    logging.info("Is this printed 1")
                     if notifier.check_events(timeout=10000):
-                        debug_print("Is this printed 2")
-                        # Read any available events
+                        logging.info("Is this printed 2")
                         notifier.read_events()
-                        # Call the respective event handler
                         notifier.process_events()
-                        
-                    
                 except KeyboardInterrupt:
-                    # Stop the monitoring if Ctrl-C is pressed
                     notifier.stop()
                     exit()
                 
 
-
-
 def remove_scripts():
-    # Remove generated_folder only if it exists
+    """
+    Function to remove generated_folder only if it exists
+    """
     shutil.rmtree(configuration.generated_folder)
     os.mkdir(configuration.generated_folder)
 
@@ -368,40 +344,31 @@ def create_individual_cases(test_case):
     """
     result = [[]]
     for mutation in test_case["mutations"]:
-
-        # If values field is "all", we update the values array with all possible values
         if isinstance(mutation["values"], str) and mutation["values"] == "all":
             mutation["values"] = []
             for i in range(pow(2, header_fields[mutation["field"]]["length"])):
                 mutation["values"].append(i)
-        # Why the use of deep copy?
         result_copy = copy.deepcopy(result)
         for i in range(len(mutation["values"]) - 1):
             result = result + copy.deepcopy(result_copy)
-
-        # For each value in the values array, generate test objects for that value 
         for index, value in enumerate(mutation["values"]):
             test = {}
             test["name"] = test_case["name"]
-            test["opcode"] = test_case["opcode"]
+            test["operation"] = test_case["operation"]
             test["header"] = test_case["protocol"]
-            if (test_case["opcode"] == "rep"):
+            if (test_case["operation"] == "rep"):
                 test["field"] = header_fields[mutation["field"]]["field"]
                 test["value"] = format_value(value, header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["length"], header_fields[mutation["field"]]["offset"])
-            elif (test_case["opcode"] == "ins"):
+            elif (test_case["operation"] == "ins"):
                 test["field"] = test_case["offset"]
                 test["value"] = value
-            elif (test_case["opcode"] == "trun"):
+            elif (test_case["operation"] == "trun"):
                 test["field"] = value
                 test["value"] = 0
-            
-
-            # What does this do?
-            for i in range(len(result)):    # 0, 1
+            for i in range(len(result)):
                 if (i * len(mutation["values"])) // len(result) == index:
                     flag = False
-
-                    if test_case["opcode"] == "rep":
+                    if test_case["operation"] == "rep":
                         for r in result[i]:
                             if r["field"] == header_fields[mutation["field"]]["field"]:
                                 r["value"] = format_value(int(r["value"], 16) | int(test["value"], 16), header_fields[mutation["field"]]["size"], header_fields[mutation["field"]]["size"], 0)
@@ -432,7 +399,6 @@ def generate_case(test_case, name, templates, index):
         content = template.format(expression)
         script_filename = "packetdrill_script_{0}_{1}_{2}.pkt".format(name, i, index)
         script_list[script_filename] = content
-
         # with open(script_filename, "w") as script_file:
         #     script_file.write(content)
     return script_list
@@ -456,12 +422,28 @@ def preload_templates(filenames):
     return templates
 
 
-# Define the event handler
-class EventHandler(ProcessEvent):
-    def process_IN_CREATE(self, event):
+def setup_watch_manager(watch_dir):
+    """
+    Setup the watch manager to trigger event when 
+    a file is created
+    """
+    global notifier
+    wm = WatchManager()
+    mask = IN_CREATE 
+    wm.add_watch(watch_dir, mask, auto_add=True)
+    notifier = Notifier(wm, EventHandler())
 
+
+class EventHandler(ProcessEvent):
+    """
+    Event handler for file creation
+    """
+    def process_IN_CREATE(self, event):
+        """
+        Function to trigger in create script file
+        """
         global scripts_written
-        debug_print(f"Event called for pathname: {event.pathname}")
+        logging.info(f"Event called for pathname: {event.pathname}")
 
         if not event.mask & IN_ISDIR and os.path.basename(event.pathname) == "index.txt":
             # This method is called when a new file is created in the directory
@@ -478,7 +460,6 @@ class EventHandler(ProcessEvent):
                 with open(script_path, "w") as script_file:
                     script_file.write(script_content)
 
-            # We tell the consumer that we are done writing 
             with open(event.pathname, 'w') as event_file:
                 event_file.write("Completed")
 
