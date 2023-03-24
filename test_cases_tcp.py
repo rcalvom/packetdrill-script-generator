@@ -6,6 +6,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "src_port",
+                "operation": "replacement",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -18,6 +19,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "dst_port",
+                "operation": "replacement",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -30,6 +32,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "seq_num",
+                "operation": "replacement",
                 "values": [
                     0x00000000,
                     0xFFFFFFFF
@@ -37,6 +40,7 @@ test_cases = [
             },
             {
                 "field": "syn_flag",
+                "operation": "replacement",
                 "values": [
                     0,
                     1
@@ -49,6 +53,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "ack_num",
+                "operation": "replacement",
                 "values": [
                     0x00000000,
                     0xFFFFFFFF
@@ -56,6 +61,7 @@ test_cases = [
             },
             {
                 "field": "ack_flag",
+                "operation": "replacement",
                 "values": [
                     0,
                     1
@@ -68,6 +74,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "data_off",
+                "operation": "replacement",
                 "values": [
                     0x0,
                     0xF
@@ -76,10 +83,11 @@ test_cases = [
         ]
     },
     {
-        "name": "tcp_reserved",
+        "name": "reserved",
         "mutations" : [
             {
-                "field": "tcp_reserved",
+                "field": "reserved",
+                "operation": "replacement",
                 "values": "all"
             }
         ]
@@ -89,59 +97,43 @@ test_cases = [
         "mutations" : [
             {
                 "field": "crw_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "ece_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "urg_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "ack_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "psh_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "rst_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "syn_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             },
             {
                 "field": "fin_flag",
-                "values": [
-                    0,
-                    1
-                ]
+                "operation": "replacement",
+                "values": "all"
             }
         ]
     },
@@ -150,6 +142,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "win_size",
+                "operation": "replacement",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -162,6 +155,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "tcp_checksum",
+                "operation": "replacement",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -174,6 +168,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "urg_pointer",
+                "operation": "replacement",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -181,6 +176,7 @@ test_cases = [
             },
             {
                 "field": "urg_flag",
+                "operation": "replacement",
                 "values": [
                     0,
                     1
