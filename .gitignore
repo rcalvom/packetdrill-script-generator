@@ -1,4 +1,5 @@
 success.txt
 failure.txt
 __pycache__/
-scripts/*
+/scripts
+/output

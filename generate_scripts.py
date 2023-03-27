@@ -11,6 +11,8 @@ from pyinotify import WatchManager, Notifier, ProcessEvent, IN_CREATE, IN_ISDIR,
 # Script Generator
 import configuration
 
+from utils import debug_print
+
 # Constants
 header_fields = {
     "src_port": {
@@ -242,11 +244,7 @@ header_fields = {
 notifier: Notifier = None
 script_list = {}
 scripts_written = False;
-debug = True
 
-def debug_print(txt):
-    if debug:
-        print(txt)
 
 def setup_watch_manager(watch_dir):
     global notifier
@@ -282,10 +280,8 @@ def generate_scripts(test_cases, templates_filenames):
             while not scripts_written:
 
                 try:
-                    debug_print("Is this printed 1")
                     # Wait for events to occur
                     if notifier.check_events(timeout=10000):
-                        debug_print("Is this printed 2")
                         # Read any available events
                         notifier.read_events()
                         # Call the respective event handler
@@ -296,6 +292,28 @@ def generate_scripts(test_cases, templates_filenames):
                     # Stop the monitoring if Ctrl-C is pressed
                     notifier.stop()
                     exit()
+
+    # We are done generating testcases. Now, we signal completion
+
+    script_list = {}
+
+    scripts_written = False
+
+    while not scripts_written:
+
+        try:
+            # Wait for events to occur
+            if notifier.check_events(timeout=10000):
+                # Read any available events
+                notifier.read_events()
+                # Call the respective event handler
+                notifier.process_events()
+                
+            
+        except KeyboardInterrupt:
+            # Stop the monitoring if Ctrl-C is pressed
+            notifier.stop()
+            exit()
                 
 
 
@@ -412,18 +430,26 @@ class EventHandler(ProcessEvent):
             # if event.name == 'myfile.txt':
             #     print("My file was created: %s" % os.path.join(event.path, event.name))
 
-            # We copy because script_list can get updated any time
-            script_list_copy = copy.deepcopy(script_list)
+            # If script_list is empty, then there is no more test to run
+            if (len(script_list) == 0):
+                # We tell the consumer that the test cases are finished 
+                with open(event.pathname, 'w') as event_file:
+                    event_file.write("Finished")
 
-            for script_name in script_list_copy:
-                script_content = script_list_copy[script_name]
-                script_path = os.path.join(event.path, script_name)
+            else :
 
-                with open(script_path, "w") as script_file:
-                    script_file.write(script_content)
+                # We copy because script_list can get updated any time
+                script_list_copy = copy.deepcopy(script_list)
 
-            # We tell the consumer that we are done writing 
-            with open(event.pathname, 'w') as event_file:
-                event_file.write("Completed")
+                for script_name in script_list_copy:
+                    script_content = script_list_copy[script_name]
+                    script_path = os.path.join(event.path, script_name)
+
+                    with open(script_path, "w") as script_file:
+                        script_file.write(script_content)
+
+                # We tell the consumer that we are done writing 
+                with open(event.pathname, 'w') as event_file:
+                    event_file.write("Completed")
 
             scripts_written = True

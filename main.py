@@ -12,8 +12,9 @@ from test_cases import test_cases
 
 # Script generator
 from generate_scripts import generate_scripts
-from execute_test import execute_test
+# from execute_test import execute_test
 from plot_stats import plot_stats
+from run_scripts import execute_test
 
 
 def main(generate, execute, stats):

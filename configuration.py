@@ -1,5 +1,12 @@
 """ Configuration file """
 
+# Enable debug logs
+debug = True
+
+crash_dir = "output/crashes"
+
+hang_dir = "output/hangs"
+
 # List the template files to use
 templates_filenames = [
     'templates/fuzz-template-tcp-established-option.pkt',
@@ -16,18 +23,19 @@ templates_filenames = [
 generated_folder = 'scripts/'
 
 # Packetdrill command (it must include a placeholder to script filename)
-packetdrill_command =   (
-                            '/home/rcalvome/Documents/app/packetdrill/gtests/net/packetdrill/packetdrill '
-                            '--so_filename=/home/rcalvome/Documents/app/rtos-bridge/libfreertos-bridge.so '
-                            '--fm_filename=/home/rcalvome/Documents/app/packet-mutation/libmutation-interface.so '
-                            '--local_ip=125.0.75.1 '
-                            '--remote_ip=125.0.75.5 '
-                            '--verbose '
-                            '--non_fatal=packet '
-                            '--tolerance_usec=1000000 '
-                            '{0} '
-                        )
+packetdrill_command =   [
+                            '/home/pamusuo/research/ampaschal-packetdrill/gtests/net/packetdrill/packetdrill',
+                            '--so_filename=/home/pamusuo/research/rtos-fuzzing/rtos-bridge/libfreertos-bridge.so',
+                            '--fm_filename=/home/pamusuo/research/rtos-fuzzing/packet-mutation/libmutation-interface.so',
+                            '--local_ip=125.0.75.0',
+                            '--remote_ip=125.0.75.20',
+                            '--bind_port=5678',
+                            '--connect_port=8765',
+                            '--verbose',
+                            '--non_fatal=packet',
+                            '--tolerance_usec=1000000'
+                        ]
 # Target command. command to execute target system
-target_command =    (
-                        '/home/rcalvome/Documents/app/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Echo_Posix/build/posix_demo '
-                    )
+target_command =    [
+                        '/home/pamusuo/research/rtos-fuzzing/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Echo_Posix/build/posix_demo'
+                    ]

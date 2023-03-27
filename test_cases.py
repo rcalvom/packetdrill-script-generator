@@ -215,30 +215,30 @@ test_cases = [
     #         }
     #     ]
     # },
-    {
-        "name": "version_ihl",
-        "opcode": "rep",
-        "protocol": "ipv4",
-        "mutations" : [
-            {
-                "field": "ip_version",
-                "values": [
-                    0x0,
-                    0x4,
-                    0x6,
-                    0xF
-                ]
-            },
-            {
-                "field": "ihl",
-                "values": [
-                    0x0,
-                    0x8,
-                    0xF
-                ]
-            }
-        ]
-    },
+        # {
+        #     "name": "version_ihl",
+        #     "opcode": "rep",
+        #     "protocol": "ipv4",
+        #     "mutations" : [
+        #         {
+        #             "field": "ip_version",
+        #             "values": [
+        #                 0x0,
+        #                 0x4,
+        #                 0x6,
+        #                 0xF
+        #             ]
+        #         },
+        #         {
+        #             "field": "ihl",
+        #             "values": [
+        #                 0x0,
+        #                 0x8,
+        #                 0xF
+        #             ]
+        #         }
+        #     ]
+        # },
     # {
     #     "name": "differentiated_services_code_point",
     #     "mutations" : [
@@ -400,93 +400,93 @@ test_cases = [
     #     ]
     # }, #TODO: CAMPOS OPCIONALES DE TCP y IP
 
-    {
-        "name": "mss_option",
-        "opcode": "ins",
-        "protocol": "tcp",
-        "offset": "20",
-        "mutations" : [
-            {
-                "values": [
-                    "0x02040000",
-                    "0x02041111",
-                    "0x02045555",
-                    "0x0204AAAA",
-                    "0x0204FFFF",
-                    "0x02030000",
-                    "0x02031111",
-                    "0x02035555",
-                    "0x0203AAAA",
-                    "0x0203FFFF",
-                    "0x02050000",
-                    "0x02051111",
-                    "0x02055555",
-                    "0x0205AAAA",
-                    "0x0205FFFF",
-                ]
-            }
-        ]
-    },
+        # {
+        #     "name": "mss_option",
+        #     "opcode": "ins",
+        #     "protocol": "tcp",
+        #     "offset": "20",
+        #     "mutations" : [
+        #         {
+        #             "values": [
+        #                 "0x02040000",
+        #                 "0x02041111",
+        #                 "0x02045555",
+        #                 "0x0204AAAA",
+        #                 "0x0204FFFF",
+        #                 "0x02030000",
+        #                 "0x02031111",
+        #                 "0x02035555",
+        #                 "0x0203AAAA",
+        #                 "0x0203FFFF",
+        #                 "0x02050000",
+        #                 "0x02051111",
+        #                 "0x02055555",
+        #                 "0x0205AAAA",
+        #                 "0x0205FFFF",
+        #             ]
+        #         }
+        #     ]
+        # },
 
-    {
-        "name": "wscale_option",
-        "opcode": "ins",
-        "protocol": "tcp",
-        "offset": "20",
-        "mutations" : [
-            {
-                "values": [
-                    "0x030400",
-                    "0x03041111",
-                    "0x030455",
-                    "0x0304AAAA",
-                    "0x0304FF",
-                    "0x03030000",
-                    "0x030311",
-                    "0x03035555",
-                    "0x0303AA",
-                    "0x0303FFFF",
-                    "0x030200",
-                    "0x03021111",
-                    "0x030255",
-                    "0x0302AAAA",
-                    "0x0302FF",
-                ]
-            }
-        ]
-    },
-    {
-        "name": "ip_option",
-        "opcode": "ins",
-        "protocol": "ipv4",
-        "offset": "20",
-        "mutations" : [
-            {
-                "values": [
-                    "0x030400",
-                    "0x03041111",
-                    "0x030455030400",
-                    "0x0304AAAA030400030400",
-                    "0x0304FF030400030400030400",
-                    "0x03040000",
-                    "0x030411030400",
-                    "0x03035555030400030400030400030400",
-                    "0x0303AA030400030400030400030400030400"
-                ]
-            }
-        ]
-    },
-    {
-        "name": "trun_tcp",
-        "opcode": "trun",
-        "protocol": "tcp",
-        "mutations": [
-            {
-                "values": [
-                    "0", "1", "5", "10", "15", "20"
-                ]
-            }
-        ]
-    },
+        # {
+        #     "name": "wscale_option",
+        #     "opcode": "ins",
+        #     "protocol": "tcp",
+        #     "offset": "20",
+        #     "mutations" : [
+        #         {
+        #             "values": [
+        #                 "0x030400",
+        #                 "0x03041111",
+        #                 "0x030455",
+        #                 "0x0304AAAA",
+        #                 "0x0304FF",
+        #                 "0x03030000",
+        #                 "0x030311",
+        #                 "0x03035555",
+        #                 "0x0303AA",
+        #                 "0x0303FFFF",
+        #                 "0x030200",
+        #                 "0x03021111",
+        #                 "0x030255",
+        #                 "0x0302AAAA",
+        #                 "0x0302FF",
+        #             ]
+        #         }
+        #     ]
+        # },
+        # {
+        #     "name": "ip_option",
+        #     "opcode": "ins",
+        #     "protocol": "ipv4",
+        #     "offset": "20",
+        #     "mutations" : [
+        #         {
+        #             "values": [
+        #                 "0x030400",
+        #                 "0x03041111",
+        #                 "0x030455030400",
+        #                 "0x0304AAAA030400030400",
+        #                 "0x0304FF030400030400030400",
+        #                 "0x03040000",
+        #                 "0x030411030400",
+        #                 "0x03035555030400030400030400030400",
+        #                 "0x0303AA030400030400030400030400030400"
+        #             ]
+        #         }
+        #     ]
+        # },
+        # {
+        #     "name": "trun_tcp",
+        #     "opcode": "trun",
+        #     "protocol": "tcp",
+        #     "mutations": [
+        #         {
+        #             "values": [
+        #                 "0", "1", "5", "10", "15", "20"
+        #             ]
+        #         }
+        #     ]
+        # },
 ]
 
