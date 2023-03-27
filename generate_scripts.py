@@ -114,7 +114,7 @@ header_fields = {
     },
     "ecn": {
         "protocol": "ipv4",
-        "field": "esn",
+        "field": "ecn",
         "size": 2
     },
     "tot_len": {

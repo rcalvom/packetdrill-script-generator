@@ -2,10 +2,10 @@
 
 test_cases = [
     {
-        "name": "ip_version_ipv6",
+        "name": "ipv4_version",
         "mutations" : [
             {
-                "field": "ipv6_version",
+                "field": "ipv4_version",
                 "operation": "replacement",
                 "values": [
                     0x0,
@@ -17,42 +17,62 @@ test_cases = [
         ]
     },
     {
-        "name": "traffic_class",
+        "name": "internet_header_length",
         "mutations" : [
             {
-                "field": "traffic_class",
+                "field": "ihl",
+                "operation": "replacement",
+                "values": [
+                    0x0,
+                    0x8,
+                    0xF
+                ]
+            }
+        ]
+    },
+    {
+        "name": "differentiated_services_code_point",
+        "mutations" : [
+            {
+                "field": "dscp",
                 "operation": "replacement",
                 "values": [
                     0x00,
-                    0x01,
-                    0x02,
-                    0x03,
                     0xFC,
-                    0xFD,
-                    0xFE,
-                    0xFF
                 ]
             }
         ]
     },
     {
-        "name": "flow_label",
+        "name": "explicit_congestion_notification",
         "mutations" : [
             {
-                "field": "flow_label",
+                "field": "ecn",
+                "operation": "replacement",
+                "values": "all"
+            }
+        ]
+    },
+    {
+        "name": "total_length",
+        "mutations" : [
+            {
+                "field": "tot_len",
                 "operation": "replacement",
                 "values": [
-                    0x000000,
-                    0x03FFFF
+                    0x0000,
+                    0x003F,
+                    0x009F,
+                    0xFFFF
                 ]
             }
         ]
     },
     {
-        "name": "payload_length",
+        "name": "identification",
         "mutations" : [
             {
-                "field": "payload_length",
+                "field": "iden",
                 "operation": "replacement",
                 "values": [
                     0x0000,
@@ -62,10 +82,57 @@ test_cases = [
         ]
     },
     {
-        "name": "next_header",
+        "name": "ip_flags",
         "mutations" : [
             {
-                "field": "next_header",
+                "field": "rsv_flag",
+                "operation": "replacement",
+                "values": "all"
+            },
+            {
+                "field": "df_flag",
+                "operation": "replacement",
+                "values": "all"
+            },
+            {
+                "field": "mf_flag",
+                "operation": "replacement",
+                "values": "all"
+            }
+        ]
+    },
+    {
+        "name": "fragment_offset",
+        "mutations" : [
+            {
+                "field": "fragment_offset",
+                "operation": "replacement",
+                "values": [
+                    0x0000,
+                    0x00F0,
+                    0x1FFF
+                ]
+            }
+        ]
+    },
+    {
+        "name": "time_to_live",
+        "mutations" : [
+            {
+                "field": "time_to_live",
+                "operation": "replacement",
+                "values": [
+                    0x00,
+                    0xFF
+                ]
+            }
+        ]
+    },
+    {
+        "name": "protocol",
+        "mutations" : [
+            {
+                "field": "protocol",
                 "operation": "replacement",
                 "values": [
                     0x00,
@@ -77,40 +144,52 @@ test_cases = [
         ]
     },
     {
-        "name": "hop_limit",
+        "name": "ip_checksum",
         "mutations" : [
             {
-                "field": "hop_limit",
+                "field": "ip_checksum",
                 "operation": "replacement",
                 "values": [
-                    0x00,
-                    0xFF
+                    0x0000,
+                    0xFFFF
                 ]
             }
         ]
     },
     {
-        "name": "source_address_IPv6",
+        "name": "source_address",
         "mutations" : [
             {
-                "field": "src_addr_ipv6",
+                "field": "src_addr",
                 "operation": "replacement",
                 "values": [
-                    0x00000000000000000000000000000000,
-                    0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    0x00000000,
+                    0xFFFFFFFF,
+                    0x7D004B00,
+                    0x7D004BFF,
+                    0x7D004B30,
+                    0x78004B30,
+                    0x78004B00,
+                    0x78004BFF
                 ]
             }
         ]
     },
-    {
-        "name": "destination_address_IPv6",
+        {
+        "name": "destiantion_address",
         "mutations" : [
             {
-                "field": "dst_addr_ipv6",
+                "field": "dst_addr",
                 "operation": "replacement",
                 "values": [
-                    0x00000000000000000000000000000000,
-                    0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+                    0x00000000,
+                    0xFFFFFFFF,
+                    0x7D004B00,
+                    0x7D004BFF,
+                    0x7D004B30,
+                    0x78004B30,
+                    0x78004B00,
+                    0x78004BFF
                 ]
             }
         ]
