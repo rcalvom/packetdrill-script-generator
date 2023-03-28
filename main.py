@@ -12,7 +12,8 @@ from test_cases import test_cases
 
 # Script generator
 from generate_scripts import generate_scripts
-from execute_test import execute_test
+#from execute_test import execute_test
+from run_scripts import execute_test
 from plot_stats import plot_stats
 
 
@@ -38,7 +39,7 @@ if __name__ == '__main__':
     argument_list = sys.argv[1:]
     options = 'ges'
     long_options = ['generate', 'execute', 'stats']
-    logging.basicConfig(format="%(message)s")
+    logging.basicConfig(format="%(message)s", level=logging.DEBUG if configuration.debug else None)
     try:
         arguments, values = getopt.getopt(argument_list, options, long_options)
         for current_argument, current_value in arguments:
