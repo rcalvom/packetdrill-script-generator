@@ -1,13 +1,11 @@
 """ Functions to generate Packetdrill scripts based on test cases list """
 
 # System
+import threading
 import logging
 import shutil
 import copy
 import os
-
-# Notify
-import pyinotify
 
 # Script Generator
 import configuration
@@ -44,9 +42,9 @@ header_fields = {
         "field": "reserved",
         "size": 4
     },
-    "crw_flag": {
+    "cwr_flag": {
         "protocol": "tcp",
-        "field": "crw_flag",
+        "field": "cwr_flag",
         "size": 1,
     },
     "ece_flag": {
@@ -222,52 +220,50 @@ operations = {
     "insert": "ins"
 }
 
-# Variables
-notifier = None
-script_list = {}
-scripts_written = False
 
-
-def generate_scripts(test_cases, templates_filenames):
+def generate_scripts(test_cases, templates_filenames, execute):
     """
     Generate scripts from test cases and templates
     """
-    global script_list, scripts_written
     remove_scripts()
-    setup_watch_manager(configuration.generated_folder)
     templates = preload_templates(templates_filenames)
+    if execute:
+        producer_thread = threading.Thread(target=background_thread, args=())
+        producer_thread.start()
+    else:
+        for test_case in test_cases:
+            single_cases = create_individual_cases(test_case)
+            for index, case in enumerate(single_cases):
+                script_cases = generate_case(case, test_case["name"], templates, index)
+                for script in script_cases:
+                    with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
+                        script_file.write(script_cases[script])
+                        logging.debug("script file '{0}' written".format(script))
+
+
+def background_thread(test_cases, templates):
+    """
+    Thread. Generate scripts from test cases and templates on background
+    """
     for test_case in test_cases:
         single_cases = create_individual_cases(test_case)
         for index, case in enumerate(single_cases):
-            script_list = generate_case(case, test_case["name"], templates, index)
-            logging.debug("Script_list has been generated")
-            scripts_written = False
-            while not scripts_written:
-                try:
-                    if notifier.check_events(timeout=10000):
-                        notifier.read_events()
-                        notifier.process_events()
-                except KeyboardInterrupt:
-                    notifier.stop()
-                    exit()
-    script_list = {}
-    scripts_written = False
-    while not scripts_written:
-        try:
-            if notifier.check_events(timeout=10000):
-                notifier.read_events()
-                notifier.process_events()
-        except KeyboardInterrupt:
-            notifier.stop()
-            exit()
-                
-
+            script_cases = generate_case(case, test_case["name"], templates, index)
+            for script in script_cases:
+                # TODO: Wait for Thread available
+                with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
+                    script_file.write(script_cases[script])
+                logging.debug("script file '{0}' written".format(script))
+                                        
 
 def remove_scripts():
     """
     Remove scripts if exist
     """
+    logging.debug("Removing scripts folder.")
     shutil.rmtree(configuration.generated_folder)
+
+    logging.debug("Creating scripts folder.")
     os.mkdir(configuration.generated_folder)
 
 
@@ -295,16 +291,6 @@ def create_individual_cases(test_case):
                 if (i * len(mutation["values"])) // len(result) == index:
                     result[i].append(test)
     return result
-    
-
-def format_value(value, size):
-    """ 
-    Format a value in the corresponding hexadecimal 
-    """
-    if size % 8 == 0:
-        return ("0x{:0" + str(size // 4) + "X}").format(value)
-    else:
-        return ("0x{:0" + str((size + (8 - (size % 8))) // 4) + "X}").format(value)
 
 
 def generate_case(test_case, name, templates, index):
@@ -317,8 +303,6 @@ def generate_case(test_case, name, templates, index):
         content = template.format(expression)
         script_filename = "packetdrill_script_{0}_{1}_{2}.pkt".format(name, i, index)
         script_list[script_filename] = content
-        # with open(script_filename, "w") as script_file:
-        #    script_file.write(content)
     return script_list
         
 
@@ -327,7 +311,17 @@ def generate_expresion(test_case): #TODO: Hardcoded header
     Generate the expression to add into the template
     """
     return "{{{0}}}".format(" ; ".join(["{0} {1} {2} {3}".format(operations[x["operation"]], x["header"], x["field"], x["value"]) for x in test_case]))
-    
+
+
+def format_value(value, size):
+    """ 
+    Format a value in the corresponding hexadecimal 
+    """
+    if size % 8 == 0:
+        return ("0x{:0" + str(size // 4) + "X}").format(value)
+    else:
+        return ("0x{:0" + str((size + (8 - (size % 8))) // 4) + "X}").format(value)
+
 
 def preload_templates(filenames):
     """
@@ -337,46 +331,5 @@ def preload_templates(filenames):
     for template in filenames:
         with open(template, "r") as template_file:
             templates.append(template_file.read())
+        logging.debug("Template '{0}' loaded.".format(template))
     return templates
-
-
-def setup_watch_manager(watch_directory):
-    """
-    Set up the watch manager and notifier
-    """
-    global notifier
-    wm = pyinotify.WatchManager()
-    mask = pyinotify.IN_CREATE 
-    wm.add_watch(watch_directory, mask, auto_add=True)
-    notifier = pyinotify.Notifier(wm, EventHandler())
-        
-
-class EventHandler(pyinotify.ProcessEvent):
-    """
-    Class to define the event handler
-    """
-    def process_IN_CREATE(self, event):
-        """
-        This method is called when a new file is created in the directory
-        """
-        global scripts_written
-        logging.debug("Event called for pathname: {0}".format(event.pathname))
-        if not event.mask & pyinotify.IN_ISDIR and os.path.basename(event.pathname) == "index.txt":
-            # if event.name == 'myfile.txt':
-            #     print("My file was created: %s" % os.path.join(event.path, event.name))
-            if (len(script_list) == 0):
-                with open(event.pathname, 'w') as event_file:
-                    event_file.write("Finished")
-            else:
-                # We copy because script_list can get updated any time
-                script_list_copy = copy.deepcopy(script_list)
-                for script_name in script_list_copy:
-                    print(event.path)
-                    script_content = script_list_copy[script_name]
-                    script_path = os.path.join(event.path, script_name)
-                    with open(script_path, "w") as script_file:
-                        script_file.write(script_content)
-                # We tell the consumer that we are done writing 
-                with open(event.pathname, 'w') as event_file:
-                    event_file.write("Completed")
-            scripts_written = True

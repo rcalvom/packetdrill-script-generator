@@ -2,63 +2,93 @@
 
 # System
 import subprocess
+import pyinotify
 import threading
 import logging
+import shutil
+import signal
+import copy
+import time
 import os
 
+# Script Generator
+import configuration
 
-def execute_target_thread(target, return_values):
+# Variables
+target_process = None
+
+
+def execute_test(folder, command, target, generate):
     """
-    Function to execute a thread with the target. Wait for completion
+    Execute script test using the target and packetdrill
     """
-    process = subprocess.Popen(args=target.split(" "))
+    global target_process
+    signal.signal(signal.SIGINT, sigint_handler)
+    if generate:
+        watch_manager = pyinotify.WatchManager()
+        watch_manager.add_watch(folder, pyinotify.IN_CREATE, auto_add=True)
+        notifier = pyinotify.Notifier(watch_manager, EventHandler())
+        notifier.loop()
+    else:
+        scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+        for script in scripts:
+            process_script(script, command, target)
+        if target_process is not None and target_process.poll() is None:
+            target_process.kill()
+
+
+def process_script(script, packetdrill_command, target_command):
+    """
+    Process a single script
+    """
+    global target_process
+    logging.debug("Executing script '{0}'".format(script))
+    hang = False
+    if target_process is None or target_process.poll() is not None:
+        target_process = subprocess.Popen(target_command, env={'TAP_INTERFACE_NAME': 'tun0'})
+        logging.debug("Target started")
     try:
-        process.wait(1)
-        return_values["target"] = process.returncode
-    except subprocess.TimeoutExpired:
-        logging.warn("Timeout in target.")
-        process.kill()
-        return_values["target"] = -1
-        
-
-def execute_packetdrill_thread(command, script, return_values):
-    """
-    Function to execute a thread with packetdrill. Wait for completion
-    """
-    process = subprocess.Popen(args=command.format(script).split(" "))
-    try:
-        process.wait(1)
-        return_values["packetdrill"] = process.returncode
-    except subprocess.TimeoutExpired:
-        logging.warn("Timeout in packetdrill.")
-        process.kill()
-        return_values["packetdrill"] = -1
-
-
-def execute_test(folder, command, target):
-    return_values = {}
-    scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-    for script in scripts:
-        target_thread = threading.Thread(target=execute_target_thread, args=(target, return_values, ))
-        packetdrill_thread = threading.Thread(target=execute_packetdrill_thread, args=(command, script, return_values))
-        target_thread.start()
-        packetdrill_thread.start()
-        target_thread.join()
-        packetdrill_thread.join()
-        print("Return target: ", return_values["target"])
-        print("Return packetdrill: ", return_values["packetdrill"])
-        if return_values["target"] != 0:
-            with open("error_target.log", "a") as f:
-                f.write(script + "\n")
-            logging.error("Error in target")
-        if return_values["packetdrill"] != 0:
-            with open("error_packetdrill.log", "a") as f:
-                f.write(script + "\n")
-            logging.error("Error in packetdrill")
-        if return_values["target"] == 0 and return_values["packetdrill"] == 0:
-            with open("success.log", "a") as f:
-                f.write(script + "\n")
-            
-
+        command = copy.deepcopy(packetdrill_command)
+        command.append(script)
+        print("Command: ", " ".join(command))
+        subprocess.run(command, env={'TAP_INTERFACE_NAME': 'tun0'}, timeout=2)
+    except subprocess.TimeoutExpired as exception:
+        logging.error("Timeout in packetdrill for file '{0}'".format(script))
+        hang = True
+        if target_process.poll() is not None:
+            shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
+        else:
+            target_process.kill()
+            time.sleep(1)
+            shutil.copy(script, os.path.join(os.path.abspath(configuration.hanging_directory), os.path.basename(script)))
+    except Exception as exception:
+        logging.error(exception)
+        exit()
+    if target_process.poll() is not None and hang is False:
+        logging.debug("Target process stopped. Writing input")
+        shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
+    if target_process.poll() is not None:
+        time.sleep(2)
+    os.remove(script)
 
     
+
+def sigint_handler(signal, frame):
+    """
+    Callback for Ctrl+C command
+    """
+    logging.log("Interrupting Execution...")
+    logging.log("Ctrl+C pressed. Signalling all threads to stop...")
+    exit()
+
+
+class EventHandler(pyinotify.ProcessEvent):
+    """
+    Class to define the event handler
+    """
+    def process_IN_CREATE(self, event):
+        """
+        This method is called when a new file is created in the directory
+        """
+        # Logica para cada lanzar runners
+        pass

@@ -4,3 +4,4 @@ success.log
 test.py
 __pycache__/
 scripts/*
+output/*

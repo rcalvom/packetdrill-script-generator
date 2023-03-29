@@ -92,51 +92,51 @@ test_cases = [
             }
         ]
     },
-    {
-        "name": "tcp_flags",
-        "mutations" : [
-            {
-                "field": "crw_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "ece_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "urg_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "ack_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "psh_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "rst_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "syn_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "fin_flag",
-                "operation": "replacement",
-                "values": "all"
-            }
-        ]
-    },
+    # {
+    #     "name": "tcp_flags",
+    #     "mutations" : [
+    #         {
+    #             "field": "cwr_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "ece_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "urg_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "ack_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "psh_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "rst_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "syn_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "fin_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         }
+    #     ]
+    # },
     {
         "name": "windows_size",
         "mutations" : [

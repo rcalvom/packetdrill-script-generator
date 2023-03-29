@@ -2,77 +2,159 @@
 
 test_cases = [
     {
-        "name": "ipv4_version",
+        "name": "source_port",
         "mutations" : [
             {
-                "field": "ipv4_version",
+                "field": "src_port",
+                "operation": "replacement",
+                "values": [
+                    0x0000,
+                    0xFFFF
+                ]
+            }
+        ]
+    },
+    {
+        "name": "destination_port",
+        "mutations" : [
+            {
+                "field": "dst_port",
+                "operation": "replacement",
+                "values": [
+                    0x0000,
+                    0xFFFF
+                ]
+            }
+        ]
+    },
+    {
+        "name": "sequence_number",
+        "mutations" : [
+            {
+                "field": "seq_num",
+                "operation": "replacement",
+                "values": [
+                    0x00000000,
+                    0xFFFFFFFF
+                ]
+            },
+            {
+                "field": "syn_flag",
+                "operation": "replacement",
+                "values": [
+                    0,
+                    1
+                ]
+            }
+        ]
+    },
+    {
+        "name": "acknowledgment_number",
+        "mutations" : [
+            {
+                "field": "ack_num",
+                "operation": "replacement",
+                "values": [
+                    0x00000000,
+                    0xFFFFFFFF
+                ]
+            },
+            {
+                "field": "ack_flag",
+                "operation": "replacement",
+                "values": [
+                    0,
+                    1
+                ]
+            }
+        ]
+    },
+    {
+        "name": "data_offset",
+        "mutations" : [
+            {
+                "field": "data_off",
                 "operation": "replacement",
                 "values": [
                     0x0,
-                    0x4,
-                    0x6,
                     0xF
                 ]
             }
         ]
     },
     {
-        "name": "internet_header_length",
+        "name": "reserved",
         "mutations" : [
             {
-                "field": "ihl",
-                "operation": "replacement",
-                "values": [
-                    0x0,
-                    0x8,
-                    0xF
-                ]
-            }
-        ]
-    },
-    {
-        "name": "differentiated_services_code_point",
-        "mutations" : [
-            {
-                "field": "dscp",
-                "operation": "replacement",
-                "values": [
-                    0x00,
-                    0xFC,
-                ]
-            }
-        ]
-    },
-    {
-        "name": "explicit_congestion_notification",
-        "mutations" : [
-            {
-                "field": "ecn",
+                "field": "reserved",
                 "operation": "replacement",
                 "values": "all"
             }
         ]
     },
+    # {
+    #     "name": "tcp_flags",
+    #     "mutations" : [
+    #         {
+    #             "field": "cwr_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "ece_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "urg_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "ack_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "psh_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "rst_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "syn_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         },
+    #         {
+    #             "field": "fin_flag",
+    #             "operation": "replacement",
+    #             "values": "all"
+    #         }
+    #     ]
+    # },
     {
-        "name": "total_length",
+        "name": "windows_size",
         "mutations" : [
             {
-                "field": "tot_len",
+                "field": "win_size",
                 "operation": "replacement",
                 "values": [
                     0x0000,
-                    0x003F,
-                    0x009F,
                     0xFFFF
                 ]
             }
         ]
     },
     {
-        "name": "identification",
+        "name": "checksum",
         "mutations" : [
             {
-                "field": "iden",
+                "field": "tcp_checksum",
                 "operation": "replacement",
                 "values": [
                     0x0000,
@@ -82,114 +164,22 @@ test_cases = [
         ]
     },
     {
-        "name": "ip_flags",
+        "name": "urg_pointer",
         "mutations" : [
             {
-                "field": "rsv_flag",
+                "field": "urg_pointer",
                 "operation": "replacement",
-                "values": "all"
+                "values": [
+                    0x0000,
+                    0xFFFF
+                ]
             },
             {
-                "field": "df_flag",
-                "operation": "replacement",
-                "values": "all"
-            },
-            {
-                "field": "mf_flag",
-                "operation": "replacement",
-                "values": "all"
-            }
-        ]
-    },
-    {
-        "name": "fragment_offset",
-        "mutations" : [
-            {
-                "field": "fragment_offset",
+                "field": "urg_flag",
                 "operation": "replacement",
                 "values": [
-                    0x0000,
-                    0x00F0,
-                    0x1FFF
-                ]
-            }
-        ]
-    },
-    {
-        "name": "time_to_live",
-        "mutations" : [
-            {
-                "field": "time_to_live",
-                "operation": "replacement",
-                "values": [
-                    0x00,
-                    0xFF
-                ]
-            }
-        ]
-    },
-    {
-        "name": "protocol",
-        "mutations" : [
-            {
-                "field": "protocol",
-                "operation": "replacement",
-                "values": [
-                    0x00,
-                    0x06,
-                    0x11,
-                    0xFF
-                ]
-            }
-        ]
-    },
-    {
-        "name": "ip_checksum",
-        "mutations" : [
-            {
-                "field": "ip_checksum",
-                "operation": "replacement",
-                "values": [
-                    0x0000,
-                    0xFFFF
-                ]
-            }
-        ]
-    },
-    {
-        "name": "source_address",
-        "mutations" : [
-            {
-                "field": "src_addr",
-                "operation": "replacement",
-                "values": [
-                    0x00000000,
-                    0xFFFFFFFF,
-                    0x7D004B00,
-                    0x7D004BFF,
-                    0x7D004B30,
-                    0x78004B30,
-                    0x78004B00,
-                    0x78004BFF
-                ]
-            }
-        ]
-    },
-        {
-        "name": "destiantion_address",
-        "mutations" : [
-            {
-                "field": "dst_addr",
-                "operation": "replacement",
-                "values": [
-                    0x00000000,
-                    0xFFFFFFFF,
-                    0x7D004B00,
-                    0x7D004BFF,
-                    0x7D004B30,
-                    0x78004B30,
-                    0x78004B00,
-                    0x78004BFF
+                    0,
+                    1
                 ]
             }
         ]
