@@ -6,7 +6,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "ipv4_version",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0,
                     0x4,
@@ -21,7 +21,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "ihl",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0,
                     0x8,
@@ -35,7 +35,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "dscp",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00,
                     0xFC,
@@ -48,7 +48,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "ecn",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": "all"
             }
         ]
@@ -58,7 +58,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "tot_len",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0x003F,
@@ -73,7 +73,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "iden",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -86,17 +86,17 @@ test_cases = [
         "mutations" : [
             {
                 "field": "rsv_flag",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": "all"
             },
             {
                 "field": "df_flag",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": "all"
             },
             {
                 "field": "mf_flag",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": "all"
             }
         ]
@@ -106,7 +106,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "fragment_offset",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0x00F0,
@@ -120,7 +120,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "time_to_live",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00,
                     0xFF
@@ -133,7 +133,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "protocol",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00,
                     0x06,
@@ -148,7 +148,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "ip_checksum",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -161,7 +161,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "src_addr",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00000000,
                     0xFFFFFFFF,
@@ -180,7 +180,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "dst_addr",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00000000,
                     0xFFFFFFFF,
@@ -190,6 +190,26 @@ test_cases = [
                     0x78004B30,
                     0x78004B00,
                     0x78004BFF
+                ]
+            }
+        ]
+    },
+    {
+        "name": "ip_option",
+        "mutations" : [
+            {
+                "field": "ip_option",
+                "operation": "insert",
+                "values": [
+                    "0x030400",
+                    "0x03041111",
+                    "0x030455030400",
+                    "0x0304AAAA030400030400",
+                    "0x0304FF030400030400030400",
+                    "0x03040000",
+                    "0x030411030400",
+                    "0x03035555030400030400030400030400",
+                    "0x0303AA030400030400030400030400030400"
                 ]
             }
         ]

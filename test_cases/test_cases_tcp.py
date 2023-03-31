@@ -183,6 +183,75 @@ test_cases = [
                 ]
             }
         ]
+    },
+    {
+        "name": "mss_option",
+        "mutations" : [
+            {
+                "field": "mss_option",
+                "operation": "insert",
+                "values": [
+                    "0x02040000",
+                    "0x02041111",
+                    "0x02045555",
+                    "0x0204AAAA",
+                    "0x0204FFFF",
+                    "0x02030000",
+                    "0x02031111",
+                    "0x02035555",
+                    "0x0203AAAA",
+                    "0x0203FFFF",
+                    "0x02050000",
+                    "0x02051111",
+                    "0x02055555",
+                    "0x0205AAAA",
+                    "0x0205FFFF",
+                ]
+            }
+        ]
+    },
+    {
+        "name": "wscale_option",
+        "mutations" : [
+            {
+                "field": "wscale_option",
+                "operation": "insert",
+                "values": [
+                    "0x030400",
+                    "0x03041111",
+                    "0x030455",
+                    "0x0304AAAA",
+                    "0x0304FF",
+                    "0x03030000",
+                    "0x030311",
+                    "0x03035555",
+                    "0x0303AA",
+                    "0x0303FFFF",
+                    "0x030200",
+                    "0x03021111",
+                    "0x030255",
+                    "0x0302AAAA",
+                    "0x0302FF"
+                ]
+            }
+        ]
+    },
+    {
+        "name": "trun_tcp",
+        "mutations": [
+            {
+                "field": "trun_tcp",
+                "operation": "truncate",
+                "values": [
+                    "0", 
+                    "1", 
+                    "5", 
+                    "10", 
+                    "15", 
+                    "20"
+                ]
+            }
+        ]
     }
 ]
 

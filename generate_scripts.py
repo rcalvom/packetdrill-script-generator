@@ -97,6 +97,21 @@ header_fields = {
         "field": "urg_pointer",
         "size": 16
     },
+    "mss_option": {
+        "protocol": "tcp",
+        "field": "mss_option",
+        "size": 32
+    },
+    "wscale_option": {
+        "protocol": "tcp",
+        "field": "wscale_option",
+        "size": 32
+    },
+    "trun_tcp": {
+        "protocol": "tcp",
+        "field": "trun_tcp",
+        "size": 8
+    },
     "ipv4_version": {
         "protocol": "ipv4",
         "field": "version",
@@ -172,6 +187,11 @@ header_fields = {
         "field": "dst_addr",
         "size": 32
     },
+    "ip_option": {
+        "protocol": "ipv4",
+        "field": "version",
+        "size": 144,
+    },
     "ipv6_version": {
         "protocol": "ipv6",
         "field": "version",
@@ -215,33 +235,39 @@ header_fields = {
 }
 
 operations = {
-    "replacement": "rep",
+    "replace": "rep",
     "truncate": "trun",
     "insert": "ins"
 }
 
 
-def generate_scripts(test_cases, templates_filenames, execute):
+def generate_scripts_async(test_cases, templates_filenames, runner_available_event, generation_ended_event):
+    """
+    Generate scripts from test cases and templates asynchronously
+    """
+    remove_scripts()
+    templates = preload_templates(templates_filenames)
+    producer_thread = threading.Thread(target=background_thread, args=(test_cases, templates, runner_available_event, generation_ended_event))
+    producer_thread.start()
+
+
+def generate_scripts(test_cases, templates_filenames):
     """
     Generate scripts from test cases and templates
     """
     remove_scripts()
     templates = preload_templates(templates_filenames)
-    if execute:
-        producer_thread = threading.Thread(target=background_thread, args=())
-        producer_thread.start()
-    else:
-        for test_case in test_cases:
-            single_cases = create_individual_cases(test_case)
-            for index, case in enumerate(single_cases):
-                script_cases = generate_case(case, test_case["name"], templates, index)
-                for script in script_cases:
-                    with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
-                        script_file.write(script_cases[script])
-                        logging.debug("script file '{0}' written".format(script))
+    for test_case in test_cases:
+        single_cases = create_individual_cases(test_case)
+        for index, case in enumerate(single_cases):
+            script_cases = generate_case(case, test_case["name"], templates, index)
+            for script in script_cases:
+                with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
+                    script_file.write(script_cases[script])
+                logging.debug("script file '{0}' written".format(script))
 
 
-def background_thread(test_cases, templates):
+def background_thread(test_cases, templates, runner_available_event, generation_ended_event):
     """
     Thread. Generate scripts from test cases and templates on background
     """
@@ -250,10 +276,12 @@ def background_thread(test_cases, templates):
         for index, case in enumerate(single_cases):
             script_cases = generate_case(case, test_case["name"], templates, index)
             for script in script_cases:
-                # TODO: Wait for Thread available
+                runner_available_event.wait()
                 with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
                     script_file.write(script_cases[script])
+                runner_available_event.clear()
                 logging.debug("script file '{0}' written".format(script))
+    generation_ended_event.set()
                                         
 
 def remove_scripts():
@@ -284,9 +312,19 @@ def create_individual_cases(test_case):
             test = {}
             test["name"] = test_case["name"]
             test["header"] = header_fields[mutation["field"]]["protocol"]
-            test["field"] = header_fields[mutation["field"]]["field"]
-            test["value"] = format_value(value, header_fields[mutation["field"]]["size"])
             test["operation"] = mutation["operation"]
+            if test["operation"] == "replace":
+                test["field"] = header_fields[mutation["field"]]["field"]
+                test["value"] = format_value(value, header_fields[mutation["field"]]["size"])
+            elif test["operation"] == "insert":
+                test["field"] = "20"
+                test["value"] = value
+            elif test["operation"] == "truncate":
+                test["value"] = value
+                test["field"] = 0
+            else:
+                print(test)
+                exit()
             for i in range(len(result)):
                 if (i * len(mutation["values"])) // len(result) == index:
                     result[i].append(test)
