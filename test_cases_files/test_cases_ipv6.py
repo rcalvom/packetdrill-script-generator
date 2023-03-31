@@ -1,4 +1,4 @@
-""" List with Test Cases to generate and excecute """
+""" List with Test Cases for IPv6 Protocol """
 
 test_cases = [
     {

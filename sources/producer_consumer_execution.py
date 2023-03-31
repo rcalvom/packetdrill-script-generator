@@ -12,7 +12,7 @@ import os
 
 # Script generator
 import configuration
-import generate_scripts
+import sources.generate_scripts
 
 generation_ended = False
 semaphore = threading.Semaphore(configuration.number_runners)
@@ -25,7 +25,7 @@ def generate_execute_async(test_cases, templates_filenames, folder, packetdrill_
     Generate and execute test cases using multiple runners
     """
     global generation_ended, slots
-    generate_scripts.remove_scripts()
+    sources.generate_scripts.remove_scripts()
     p_thread = threading.Thread(target=producer_thread, args=(test_cases, templates_filenames))
     p_thread.start()
     for i in range(configuration.number_runners):
@@ -52,11 +52,11 @@ def producer_thread(test_cases, templates_filenames):
     Thread to produce test scripts
     """
     global consumer_available_event, generation_ended
-    templates = generate_scripts.preload_templates(templates_filenames)
+    templates = sources.generate_scripts.preload_templates(templates_filenames)
     for test_case in test_cases:
-        single_cases = generate_scripts.create_individual_cases(test_case)
+        single_cases = sources.generate_scripts.create_individual_cases(test_case)
         for index, case in enumerate(single_cases):
-            script_cases = generate_scripts.generate_case(case, test_case["name"], templates, index)
+            script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
             for script in script_cases:
                 consumer_available_event.wait()
                 with open(os.path.join(configuration.generated_folder, script), "w") as script_file:

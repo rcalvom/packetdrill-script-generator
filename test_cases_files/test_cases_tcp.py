@@ -1,4 +1,4 @@
-""" List with Test Cases to generate and excecute """
+""" List with Test Cases for TCP Protocol """
 
 test_cases = [
     {
@@ -6,7 +6,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "src_port",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -19,7 +19,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "dst_port",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -32,7 +32,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "seq_num",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00000000,
                     0xFFFFFFFF
@@ -40,7 +40,7 @@ test_cases = [
             },
             {
                 "field": "syn_flag",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0,
                     1
@@ -53,7 +53,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "ack_num",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x00000000,
                     0xFFFFFFFF
@@ -61,7 +61,7 @@ test_cases = [
             },
             {
                 "field": "ack_flag",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0,
                     1
@@ -74,7 +74,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "data_off",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0,
                     0xF
@@ -87,7 +87,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "reserved",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": "all"
             }
         ]
@@ -97,42 +97,42 @@ test_cases = [
     #     "mutations" : [
     #         {
     #             "field": "cwr_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "ece_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "urg_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "ack_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "psh_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "rst_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "syn_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         },
     #         {
     #             "field": "fin_flag",
-    #             "operation": "replacement",
+    #             "operation": "replace",
     #             "values": "all"
     #         }
     #     ]
@@ -142,7 +142,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "win_size",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -155,7 +155,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "tcp_checksum",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -168,7 +168,7 @@ test_cases = [
         "mutations" : [
             {
                 "field": "urg_pointer",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -176,7 +176,7 @@ test_cases = [
             },
             {
                 "field": "urg_flag",
-                "operation": "replacement",
+                "operation": "replace",
                 "values": [
                     0,
                     1

@@ -1,4 +1,4 @@
-""" List with Test Cases to generate and excecute """
+""" List with Test Cases for IPv4 Protocol """
 
 test_cases = [
     {

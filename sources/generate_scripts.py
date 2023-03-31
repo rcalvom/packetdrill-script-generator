@@ -1,7 +1,6 @@
 """ Functions to generate Packetdrill scripts based on test cases list """
 
 # System
-import threading
 import logging
 import shutil
 import copy
@@ -241,20 +240,11 @@ operations = {
 }
 
 
-def generate_scripts_async(test_cases, templates_filenames, runner_available_event, generation_ended_event):
-    """
-    Generate scripts from test cases and templates asynchronously
-    """
-    remove_scripts()
-    templates = preload_templates(templates_filenames)
-    producer_thread = threading.Thread(target=background_thread, args=(test_cases, templates, runner_available_event, generation_ended_event))
-    producer_thread.start()
-
-
 def generate_scripts(test_cases, templates_filenames):
     """
     Generate scripts from test cases and templates
     """
+    count = 0
     remove_scripts()
     templates = preload_templates(templates_filenames)
     for test_case in test_cases:
@@ -264,33 +254,18 @@ def generate_scripts(test_cases, templates_filenames):
             for script in script_cases:
                 with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
                     script_file.write(script_cases[script])
+                count += 1
                 logging.debug("script file '{0}' written".format(script))
+    logging.info("Script generator: {0} test files have been written successfully".format(count))                                       
 
-
-def background_thread(test_cases, templates, runner_available_event, generation_ended_event):
-    """
-    Thread. Generate scripts from test cases and templates on background
-    """
-    for test_case in test_cases:
-        single_cases = create_individual_cases(test_case)
-        for index, case in enumerate(single_cases):
-            script_cases = generate_case(case, test_case["name"], templates, index)
-            for script in script_cases:
-                runner_available_event.wait()
-                with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
-                    script_file.write(script_cases[script])
-                runner_available_event.clear()
-                logging.debug("script file '{0}' written".format(script))
-    generation_ended_event.set()
-                                        
 
 def remove_scripts():
     """
     Remove scripts if exist
     """
-    logging.debug("Removing scripts folder.")
-    shutil.rmtree(configuration.generated_folder)
-
+    if os.path.exists(configuration.generated_folder):
+        logging.debug("Removing scripts folder.")
+        shutil.rmtree(configuration.generated_folder)
     logging.debug("Creating scripts folder.")
     os.mkdir(configuration.generated_folder)
 
@@ -317,13 +292,13 @@ def create_individual_cases(test_case):
                 test["field"] = header_fields[mutation["field"]]["field"]
                 test["value"] = format_value(value, header_fields[mutation["field"]]["size"])
             elif test["operation"] == "insert":
-                test["field"] = "20"
+                test["field"] = "20" #TODO value to insert
                 test["value"] = value
             elif test["operation"] == "truncate":
-                test["value"] = value
                 test["field"] = 0
+                test["value"] = value
             else:
-                print(test)
+                logging.error("Script generator: Operation {0} not valid".format(test))
                 exit()
             for i in range(len(result)):
                 if (i * len(mutation["values"])) // len(result) == index:
@@ -333,7 +308,7 @@ def create_individual_cases(test_case):
 
 def generate_case(test_case, name, templates, index):
     """
-    Write the script to a file
+    Generate all filename/content of a test case given a templates
     """
     script_list = {}
     for i, template in enumerate(templates):
@@ -344,7 +319,7 @@ def generate_case(test_case, name, templates, index):
     return script_list
         
 
-def generate_expresion(test_case): #TODO: Hardcoded header
+def generate_expresion(test_case):
     """
     Generate the expression to add into the template
     """
