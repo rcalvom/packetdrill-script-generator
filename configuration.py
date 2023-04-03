@@ -1,14 +1,14 @@
 """ Configuration file """
 
 # Script Generator (Uncomment only the corresponding to the system to test)
-from configuration_files.FreeRTOS_config import *
+# from configuration_files.FreeRTOS_config import *
 # from configuration_files.Contiki_config import *
-# from configuration_files.PicoTCP_config import *
+from configuration_files.PicoTCP_config import *
 # from configuration_files.lwIP_config import *
 # from configuration_files.mTCP_config import *
 
 # Number of runners
-number_runners = 10
+number_runners = 5
 
 # Directory to store crashes
 crashing_directory = 'output/crashes'

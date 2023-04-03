@@ -17,6 +17,7 @@ import sources.generate_scripts
 generation_ended = False
 semaphore = threading.Semaphore(configuration.number_runners)
 consumer_available_event = threading.Event()
+script_ready_event = threading.Event()
 slots = {}
 
 
@@ -47,6 +48,10 @@ def generate_execute_async(test_cases, templates_filenames, folder, packetdrill_
         c_thread.start()
 
 
+def assign_script_to_runner():
+    pass
+
+
 def producer_thread(test_cases, templates_filenames):
     """
     Thread to produce test scripts
@@ -73,12 +78,14 @@ def consumer_thread(script, packetdrill_command, target_command, semaphore, inde
     global slots
     logging.debug("Executing script '{0}' {1}".format(script, index))
     envs = {'TAP_INTERFACE_NAME': 'tap{0}'.format(index)}
-    target_process = subprocess.Popen(target_command, env=envs)#, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    target_output_file = open("target_output_file.log", "w")
+    packetdrill_output_file = open("target_output_file.log", "w")
+    target_process = subprocess.Popen(target_command, env=envs, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hang = False
     try:
         command = copy.deepcopy(packetdrill_command)
         command.append(script)
-        subprocess.run(command, env=envs, timeout=2)#, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, env=envs, timeout=2, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         logging.error("Timeout in packetdrill for file '{0}'".format(script))
         hang = True

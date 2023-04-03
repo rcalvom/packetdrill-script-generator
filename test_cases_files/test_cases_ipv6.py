@@ -5,7 +5,8 @@ test_cases = [
         "name": "ip_version_ipv6",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "ipv6_version",
+                "operation": "replace",
                 "values": [
                     0x0,
                     0x4,
@@ -19,7 +20,8 @@ test_cases = [
         "name": "traffic_class",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "traffic_class",
+                "operation": "replace",
                 "values": [
                     0x00,
                     0x01,
@@ -37,7 +39,8 @@ test_cases = [
         "name": "flow_label",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "flow_label",
+                "operation": "replace",
                 "values": [
                     0x000000,
                     0x03FFFF
@@ -49,7 +52,8 @@ test_cases = [
         "name": "payload_length",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "payload_length",
+                "operation": "replace",
                 "values": [
                     0x0000,
                     0xFFFF
@@ -61,7 +65,8 @@ test_cases = [
         "name": "next_header",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "next_header",
+                "operation": "replace",
                 "values": [
                     0x00,
                     0x06,
@@ -75,7 +80,8 @@ test_cases = [
         "name": "hop_limit",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "hop_limit",
+                "operation": "replace",
                 "values": [
                     0x00,
                     0xFF
@@ -87,7 +93,8 @@ test_cases = [
         "name": "source_address_IPv6",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "src_addr_ipv6",
+                "operation": "replace",
                 "values": [
                     0x00000000000000000000000000000000,
                     0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
@@ -99,7 +106,8 @@ test_cases = [
         "name": "destination_address_IPv6",
         "mutations" : [
             {
-                "field": "ip_version",
+                "field": "dst_addr_ipv6",
+                "operation": "replace",
                 "values": [
                     0x00000000000000000000000000000000,
                     0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
