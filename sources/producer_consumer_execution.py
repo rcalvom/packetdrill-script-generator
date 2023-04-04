@@ -1,6 +1,5 @@
 """ Producer and consumer excecution """
 
-
 # System
 import subprocess
 import threading
@@ -16,7 +15,7 @@ import sources.generate_scripts
 
 generation_ended = False
 semaphore = threading.Semaphore(configuration.number_runners)
-consumer_available_event = threading.Event()
+script_required_event = threading.Event()
 script_ready_event = threading.Event()
 slots = {}
 
@@ -26,48 +25,40 @@ def generate_execute_async(test_cases, templates_filenames, folder, packetdrill_
     Generate and execute test cases using multiple runners
     """
     global generation_ended, slots
-    sources.generate_scripts.remove_scripts()
+    init_slots()
     p_thread = threading.Thread(target=producer_thread, args=(test_cases, templates_filenames))
     p_thread.start()
-    for i in range(configuration.number_runners):
-        slots[i] = True
     while not generation_ended:
-        consumer_available_event.set()
-        scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-        if len(scripts) == 0:
-            continue
         semaphore.acquire()
+        script_required_event.set()
+        script_ready_event.wait()
+        script_ready_event.clear()
+        scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
         script = shutil.move(scripts[0], configuration.processing_directory)
-        index = -1
-        for i in range(configuration.number_runners):
-            if slots.get(i):
-                index = i
-                break
-        slots[i] = False
+        index = get_available_slot()
+        slots[index] = False
         c_thread = threading.Thread(target=consumer_thread, args=(str(script), packetdrill_command, target_command, semaphore, index))
         c_thread.start()
-
-
-def assign_script_to_runner():
-    pass
 
 
 def producer_thread(test_cases, templates_filenames):
     """
     Thread to produce test scripts
     """
-    global consumer_available_event, generation_ended
+    global script_required_event, generation_ended
+    sources.generate_scripts.remove_scripts()
     templates = sources.generate_scripts.preload_templates(templates_filenames)
     for test_case in test_cases:
         single_cases = sources.generate_scripts.create_individual_cases(test_case)
         for index, case in enumerate(single_cases):
             script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
             for script in script_cases:
-                consumer_available_event.wait()
+                script_required_event.wait()
+                script_required_event.clear()
                 with open(os.path.join(configuration.generated_folder, script), "w") as script_file:
                     script_file.write(script_cases[script])
                 logging.debug("script file '{0}' written".format(script))
-                consumer_available_event.clear()
+                script_ready_event.set()
     generation_ended = True
 
 
@@ -76,33 +67,60 @@ def consumer_thread(script, packetdrill_command, target_command, semaphore, inde
     Thread to process a single script
     """
     global slots
+    envs = {
+        'TAP_INTERFACE_NAME': 'tap{0}'.format(index)
+        }
     logging.debug("Executing script '{0}' {1}".format(script, index))
-    envs = {'TAP_INTERFACE_NAME': 'tap{0}'.format(index)}
     target_output_file = open("target_output_file.log", "w")
     packetdrill_output_file = open("target_output_file.log", "w")
-    target_process = subprocess.Popen(target_command, env=envs, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    target_process = subprocess.Popen(target_command, env=envs, stdout=target_output_file, stderr=target_output_file)#, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hang = False
     try:
         command = copy.deepcopy(packetdrill_command)
         command.append(script)
-        subprocess.run(command, env=envs, timeout=2, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, env=envs, timeout=2)#, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         logging.error("Timeout in packetdrill for file '{0}'".format(script))
         hang = True
         if target_process.poll() is not None:
-            logging.debug("Crash on script '{0}'. ".format(script))
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
+            log_file(script)
         else:
-            logging.debug("Hang on script '{0}'. ".format(script))
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.hanging_directory), os.path.basename(script)))
+            log_file(script, is_hang=True)
     finally:
         time.sleep(2)
         if target_process.poll() is not None and hang is False:
-            logging.debug("Crash on script '{0}'. ".format(script))
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
+            log_file(script)
         if target_process.poll() is None:
             target_process.kill()           
             time.sleep(2)
         semaphore.release()
         slots[index] = True 
         os.remove(script)
+
+
+def get_available_slot():
+    global slots
+    index = -1
+    for i in range(configuration.number_runners):
+        if slots.get(i):
+            index = i
+            break
+    return index
+
+def init_slots():
+    global slots
+    for i in range(configuration.number_runners):
+        slots[i] = True
+    
+
+def log_file(script, is_hang=False):
+    message = ""
+    path = None
+    if is_hang:
+        message = "Hang on script '{0}'. "
+        path = configuration.hanging_directory
+    else:
+        message = "Crash on script '{0}'. "
+        path = configuration.crashing_directory
+    logging.debug(message.format(script))
+    shutil.copy(script, os.path.join(os.path.abspath(path), os.path.basename(script)))

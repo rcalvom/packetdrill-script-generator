@@ -15,12 +15,16 @@ from sources.generate_scripts import generate_scripts
 from sources.execute_test import execute_test
 from sources.producer_consumer_execution import generate_execute_async
 from sources.plot_stats import plot_stats
+from sources.clean_resources import clean_resources
 
 
-def main(generate, execute, stats):
+def main(generate, execute, stats, clean):
     """
     Main execution function. start the processes
     """
+    if clean:
+        clean_resources()
+        exit()
     if generate and execute:
         generate_execute_async(test_cases, configuration.templates_filenames, configuration.generated_folder, configuration.packetdrill_command, configuration.target_command)
     if generate and not execute:
@@ -38,9 +42,10 @@ if __name__ == '__main__':
     generate = False
     execute = False
     stats = False
+    clean = False
     argument_list = sys.argv[1:]
     options = 'ges'
-    long_options = ['generate', 'execute', 'stats', 'verbose']
+    long_options = ['generate', 'execute', 'stats', 'verbose', 'clean']
     try:
         debug = False
         arguments, values = getopt.getopt(argument_list, options, long_options)
@@ -53,7 +58,9 @@ if __name__ == '__main__':
                 stats = True
             elif current_argument in ('--verbose'):
                 debug = True
+            elif current_argument in ('--clean'):
+                clean = True
         logging.basicConfig(format="%(message)s", level=logging.DEBUG if debug else logging.INFO)
-        main(generate, execute, stats)
+        main(generate, execute, stats, clean)
     except getopt.error as err:
         logging.error(err)
