@@ -3,8 +3,8 @@
 # Script Generator (Uncomment only the corresponding to the system to test)
 # from configuration_files.FreeRTOS_config import *
 # from configuration_files.Contiki_config import *
-from configuration_files.PicoTCP_config import *
-# from configuration_files.lwIP_config import *
+# from configuration_files.PicoTCP_config import *
+from configuration_files.lwIP_config import *
 # from configuration_files.mTCP_config import *
 
 # Number of runners
@@ -18,6 +18,9 @@ hanging_directory = 'output/hangings'
 
 # Directory to store processing files
 processing_directory = 'output/processing'
+
+# Directory to store log files with traces
+log_directory = 'output/traces'
 
 # Destination folder of all generated scripts
 generated_folder = 'scripts/'

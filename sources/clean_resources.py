@@ -13,7 +13,8 @@ folders_to_recreate = [
     configuration.generated_folder,
     configuration.crashing_directory,
     configuration.hanging_directory,
-    configuration.processing_directory
+    configuration.processing_directory,
+    configuration.log_directory
 ] 
 
 def clean_resources():

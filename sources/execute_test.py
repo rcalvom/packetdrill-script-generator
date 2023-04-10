@@ -62,7 +62,7 @@ def process_script_thread(script, packetdrill_command, target_command, semaphore
     Thread to process a single script
     """
     logging.debug("Executing script '{0}'".format(script))
-    envs = {'TAP_INTERFACE_NAME': 'tap{0}'.format(index)}
+    envs = {'TAP_INTERFACE_NAME': 'tun{0}'.format(index)}
     target_process = subprocess.Popen(target_command, env=envs, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hang = False
     try:

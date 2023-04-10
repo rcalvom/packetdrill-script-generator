@@ -24,7 +24,6 @@ def main(generate, execute, stats, clean):
     """
     if clean:
         clean_resources()
-        exit()
     if generate and execute:
         generate_execute_async(test_cases, configuration.templates_filenames, configuration.generated_folder, configuration.packetdrill_command, configuration.target_command)
     if generate and not execute:

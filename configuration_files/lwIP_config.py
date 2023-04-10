@@ -14,7 +14,7 @@ packetdrill_command =   [
                         ]
 
 # Target command. command to execute target system
-# udo TAP_INTERFACE_NAME=tap0 /home/rcalvome/Documents/app/lwip/build/contrib/ports/unix/example_app/example_app
+# sudo TAP_INTERFACE_NAME=tap0 /home/rcalvome/Documents/app/lwip/build/contrib/ports/unix/example_app/example_app
 target_command =    [
                         '/home/rcalvome/Documents/app/lwip/build/contrib/ports/unix/example_app/example_app'
                     ]

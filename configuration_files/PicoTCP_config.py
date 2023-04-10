@@ -17,6 +17,7 @@ packetdrill_command =   [
                         ]
 
 # Target command. command to execute target system
+#sudo TAP_INTERFACE_NAME=tap0 /home/rcalvome/Documents/app/picotcp/build/pd_fuzz/fuzz-agent.elf 
 target_command =    [
                         '/home/rcalvome/Documents/app/picotcp/build/pd_fuzz/fuzz-agent.elf'
                     ]

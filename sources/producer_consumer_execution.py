@@ -68,17 +68,18 @@ def consumer_thread(script, packetdrill_command, target_command, semaphore, inde
     """
     global slots
     envs = {
-        'TAP_INTERFACE_NAME': 'tap{0}'.format(index)
+        'TAP_INTERFACE_NAME': 'tun{0}'.format(index)
         }
     logging.debug("Executing script '{0}' {1}".format(script, index))
-    target_output_file = open("target_output_file.log", "w")
-    packetdrill_output_file = open("target_output_file.log", "w")
+    target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + ".target.log",), "w")
+    packetdrill_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + ".packetdrill.log",), "w")
     target_process = subprocess.Popen(target_command, env=envs, stdout=target_output_file, stderr=target_output_file)#, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hang = False
+    crash = False
     try:
         command = copy.deepcopy(packetdrill_command)
         command.append(script)
-        subprocess.run(command, env=envs, timeout=2)#, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, env=envs, timeout=2, stdout=packetdrill_output_file, stderr=packetdrill_output_file)
     except subprocess.TimeoutExpired:
         logging.error("Timeout in packetdrill for file '{0}'".format(script))
         hang = True
@@ -88,11 +89,17 @@ def consumer_thread(script, packetdrill_command, target_command, semaphore, inde
             log_file(script, is_hang=True)
     finally:
         time.sleep(2)
+        target_output_file.close()
+        packetdrill_output_file.close()
         if target_process.poll() is not None and hang is False:
             log_file(script)
+            crash = True
         if target_process.poll() is None:
             target_process.kill()           
             time.sleep(2)
+        if not crash and not hang:
+            os.remove(target_output_file.name)
+            os.remove(packetdrill_output_file.name)    
         semaphore.release()
         slots[index] = True 
         os.remove(script)

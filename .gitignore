@@ -4,6 +4,6 @@ success.log
 test.py
 __pycache__/
 scripts/*
-output/*
+output*/
 Trace.dump
 test.pkt
