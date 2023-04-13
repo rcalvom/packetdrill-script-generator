@@ -23,3 +23,6 @@ target_command =    [
                         '/home/rcalvome/Documents/app/contiki-ng/examples/fuzz-agent/udp-server.native'
                     ]
 
+# Interface placeholder
+interface_placeholder = 'tun{0}'
+

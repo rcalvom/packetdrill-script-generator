@@ -36,6 +36,9 @@ def generate_execute_async(test_cases, templates_filenames, folder, packetdrill_
         scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
         script = shutil.move(scripts[0], configuration.processing_directory)
         index = get_available_slot()
+        if index == -1:
+            logging.error("Trying to assign when no threads are available")
+            exit()
         slots[index] = False
         c_thread = threading.Thread(target=consumer_thread, args=(str(script), packetdrill_command, target_command, semaphore, index))
         c_thread.start()

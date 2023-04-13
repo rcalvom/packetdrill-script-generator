@@ -5,10 +5,9 @@
 # from configuration_files.Contiki_config import *
 # from configuration_files.PicoTCP_config import *
 from configuration_files.lwIP_config import *
-# from configuration_files.mTCP_config import *
 
 # Number of runners
-number_runners = 5
+number_runners = 30
 
 # Directory to store crashes
 crashing_directory = 'output/crashes'

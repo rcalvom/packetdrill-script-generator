@@ -13,7 +13,7 @@ from test_cases import test_cases
 # Script generator
 from sources.generate_scripts import generate_scripts
 from sources.execute_test import execute_test
-from sources.producer_consumer_execution import generate_execute_async
+from sources.parallel_test_execution import execute_and_generate_test
 from sources.plot_stats import plot_stats
 from sources.clean_resources import clean_resources
 
@@ -25,7 +25,7 @@ def main(generate, execute, stats, clean):
     if clean:
         clean_resources()
     if generate and execute:
-        generate_execute_async(test_cases, configuration.templates_filenames, configuration.generated_folder, configuration.packetdrill_command, configuration.target_command)
+        execute_and_generate_test(test_cases)
     if generate and not execute:
         generate_scripts(test_cases, configuration.templates_filenames)
     if not generate and execute: 

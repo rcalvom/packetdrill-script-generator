@@ -19,3 +19,6 @@ target_command =    [
                         '/home/rcalvome/Documents/app/lwip/build/contrib/ports/unix/example_app/example_app'
                     ]
 
+# Interface placeholder
+interface_placeholder = 'tap{0}'
+

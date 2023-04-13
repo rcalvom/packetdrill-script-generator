@@ -18,3 +18,5 @@ target_command =    [
                         '/home/rcalvome/Documents/app/FreeRTOS/FreeRTOS-Plus/Demo/FreeRTOS_Plus_TCP_Echo_Posix/build/posix_demo'
                     ]
 
+# Interface placeholder
+interface_placeholder = 'tap{0}'

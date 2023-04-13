@@ -22,3 +22,6 @@ target_command =    [
                         '/home/rcalvome/Documents/app/picotcp/build/pd_fuzz/fuzz-agent.elf'
                     ]
 
+# Interface placeholder
+interface_placeholder = 'tap{0}'
+
