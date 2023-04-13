@@ -15,9 +15,6 @@ crashing_directory = 'output/crashes'
 # Directory to store hangings
 hanging_directory = 'output/hangings'
 
-# Directory to store processing files
-processing_directory = 'output/processing'
-
 # Directory to store log files with traces
 log_directory = 'output/traces'
 
