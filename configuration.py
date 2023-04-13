@@ -6,8 +6,14 @@
 # from configuration_files.PicoTCP_config import *
 from configuration_files.lwIP_config import *
 
+# Number of test cases at same time
+k = 2
+
 # Number of runners
 number_runners = 30
+
+# Base output directoty
+output_directory = 'output'
 
 # Directory to store crashes
 crashing_directory = 'output/crashes'
@@ -23,14 +29,12 @@ generated_folder = 'scripts/'
 
 # List the template files to use
 templates_filenames = [
-    'templates/fuzz-template-tcp-established-option.pkt',
     'templates/fuzz-template-tcp-established.pkt',
+    'templates/fuzz-template-tcp-established-option.pkt',
     'templates/fuzz-template-tcp-fin-wait.pkt',
     'templates/fuzz-template-tcp-last-ack.pkt',
     'templates/fuzz-template-tcp-listen.pkt',
     'templates/fuzz-template-tcp-send.pkt',
     'templates/fuzz-template-tcp-syn-rcvd.pkt',
-    'templates/fuzz-template-tcp-syn-sent.pkt',
-    'templates/fuzz-template-tcp-y.pkt',
-    'templates/fuzz-template-tcp-z.pkt'
+    'templates/fuzz-template-tcp-syn-sent.pkt'
 ]

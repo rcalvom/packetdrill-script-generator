@@ -12,5 +12,5 @@ test_cases = []
 # Select cases to test
 test_cases += tcp_tests
 # test_cases += udp_tests
-#test_cases += ipv4_tests
-test_cases += ipv6_tests
+test_cases += ipv4_tests
+#test_cases += ipv6_tests

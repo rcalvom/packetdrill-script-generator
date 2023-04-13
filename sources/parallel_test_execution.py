@@ -23,22 +23,31 @@ target_timeout = 2.0
 # Variables
 semaphore = threading.Semaphore(configuration.number_runners)
 
-
 def execute_and_generate_test(test_cases):
     slots = init_slots()
+    count = 0
     sources.generate_scripts.remove_scripts()
     templates = sources.generate_scripts.preload_templates(configuration.templates_filenames)
-    for test_case in test_cases:
-        single_cases = sources.generate_scripts.create_individual_cases(test_case)
-        for index, case in enumerate(single_cases):
-            script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
-            for script in script_cases:
-                script_path = os.path.join(configuration.generated_folder, script)
-                with open(script_path, "w") as script_file:
-                    script_file.write(script_cases[script])
-                logging.debug("script file '{0}' written".format(script))
-                semaphore.acquire()
-                assign_to_thread(script_path, slots, semaphore)
+    for index1, test_case_1 in enumerate(test_cases):
+        for index2, test_case_2 in enumerate(test_cases):
+            if index1 >= index2:
+                continue
+            test_case = {
+                "name": "{0}_X_{1}".format(test_case_1["name"], test_case_2["name"]),
+                "mutations": test_case_1["mutations"] + test_case_2["mutations"] 
+            }
+            single_cases = sources.generate_scripts.create_individual_cases(test_case)
+            for index, case in enumerate(single_cases):
+                script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
+                for script in script_cases:
+                    script_path = os.path.join(configuration.generated_folder, script)
+                    with open(script_path, "w") as script_file:
+                       script_file.write(script_cases[script])
+                    count += 1
+                    logging.debug("script file '{0}' written".format(script))
+                    semaphore.acquire()
+                    assign_to_thread(script_path, slots, semaphore)
+    logging.info("Script generator: {0} test files have been written successfully".format(count))                                       
                 
 
 def assign_to_thread(script_path, slots, semaphore):
