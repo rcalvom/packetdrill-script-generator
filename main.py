@@ -1,9 +1,9 @@
 #!/usr/bin/python3
-""" Main script to generate test cases and run """
+""" Main script of Script generator """
 
 # System
-import getopt
 import logging
+import getopt
 import sys
 
 # Configuration
@@ -11,20 +11,26 @@ import configuration
 from test_cases import test_cases
 
 # Script generator
-from generate_scripts import generate_scripts
-from execute_test import execute_test
-from plot_stats import plot_stats
+from sources.generate_scripts import generate_scripts
+from sources.execute_test import execute_test
+from sources.parallel_test_execution import execute_and_generate_test
+from sources.plot_stats import plot_stats
+from sources.clean_resources import clean_resources
 
 
-def main(generate, execute, stats):
+def main(generate, execute, stats, clean):
     """
     Main execution function. start the processes
     """
-    if generate:
+    if clean:
+        clean_resources()
+    if generate and execute:
+        execute_and_generate_test(test_cases)
+    if generate and not execute:
         generate_scripts(test_cases, configuration.templates_filenames)
-    if execute:
-        execute_test(configuration.generated_folder, configuration.packetdrill_command, configuration.target_command)
-    if stats:
+    if not generate and execute: 
+        execute_test(configuration.generated_folder, configuration.packetdrill_command, configuration.target_command, generate)
+    if stats: #TODO: Evaluate stats
         plot_stats()
 
 
@@ -35,11 +41,12 @@ if __name__ == '__main__':
     generate = False
     execute = False
     stats = False
+    clean = False
     argument_list = sys.argv[1:]
     options = 'ges'
-    long_options = ['generate', 'execute', 'stats']
-    logging.basicConfig(format="%(message)s")
+    long_options = ['generate', 'execute', 'stats', 'verbose', 'clean']
     try:
+        debug = False
         arguments, values = getopt.getopt(argument_list, options, long_options)
         for current_argument, current_value in arguments:
             if current_argument in ('-g', '--generate'):
@@ -48,6 +55,11 @@ if __name__ == '__main__':
                 execute = True
             elif current_argument in ('-s', '--stats'):
                 stats = True
-        main(generate, execute, stats)
+            elif current_argument in ('--verbose'):
+                debug = True
+            elif current_argument in ('--clean'):
+                clean = True
+        logging.basicConfig(format="%(message)s", level=logging.DEBUG if debug else logging.INFO)
+        main(generate, execute, stats, clean)
     except getopt.error as err:
         logging.error(err)

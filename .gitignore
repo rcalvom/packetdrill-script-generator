@@ -2,5 +2,9 @@ error_packetdrill.log
 error_target.log
 success.log
 test.py
+plots/
 __pycache__/
 scripts/*
+output*/
+Trace.dump
+test.pkt
