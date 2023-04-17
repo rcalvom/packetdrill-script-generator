@@ -10,6 +10,7 @@ import configuration
 
 # Constants
 folders_to_recreate = [
+    configuration.output_directory,
     configuration.generated_folder,
     configuration.crashing_directory,
     configuration.hanging_directory,

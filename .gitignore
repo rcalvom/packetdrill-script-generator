@@ -4,7 +4,7 @@ success.log
 test.py
 plots/
 __pycache__/
-scripts/*
-output*/
+*_scripts/
+*_output/
 Trace.dump
 test.pkt

@@ -25,7 +25,7 @@ def main(generate, execute, stats, clean):
     if clean:
         clean_resources()
     if generate and execute:
-        execute_and_generate_test(test_cases)
+        execute_and_generate_test()
     if generate and not execute:
         generate_scripts(test_cases, configuration.templates_filenames)
     if not generate and execute: 

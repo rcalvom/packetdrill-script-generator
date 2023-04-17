@@ -12,6 +12,7 @@ import os
 # Script generator
 import sources.generate_scripts
 import configuration
+import test_cases as tests
 
 # Constants
 interface_name_env = 'TAP_INTERFACE_NAME'
@@ -22,54 +23,75 @@ target_timeout = 2.0
 
 # Variables
 semaphore = threading.Semaphore(configuration.number_runners)
+templates = sources.generate_scripts.preload_templates(configuration.templates_filenames)
+test_cases = tests.test_cases
+count = 0
+slots = {}
 
-def execute_and_generate_test(test_cases):
-    slots = init_slots()
-    count = 0
-    sources.generate_scripts.remove_scripts()
-    templates = sources.generate_scripts.preload_templates(configuration.templates_filenames)
-    for index1, test_case_1 in enumerate(test_cases):
-        for index2, test_case_2 in enumerate(test_cases):
-            if index1 >= index2:
-                continue
+
+def recursive_generation(indexes: list):
+    global count, templates, semaphore
+    if len(indexes) == configuration.k:
+        if not increasing_indexes(indexes):
+            return
+        else:
             test_case = {
-                "name": "{0}_X_{1}".format(test_case_1["name"], test_case_2["name"]),
-                "mutations": test_case_1["mutations"] + test_case_2["mutations"] 
+                "name": "_X_".join([test_cases[x]["name"] for x in indexes]),
+                "mutations": []
             }
-            single_cases = sources.generate_scripts.create_individual_cases(test_case)
+            for index in indexes:
+                test_case["mutations"] += test_cases[index]["mutations"]
+            single_cases = sources.generate_scripts.create_individual_cases(test_case) #TODO Generate in another way this scripts (if k is big, it will load in memory lot of information)
             for index, case in enumerate(single_cases):
                 script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
                 for script in script_cases:
                     script_path = os.path.join(configuration.generated_folder, script)
                     with open(script_path, "w") as script_file:
-                       script_file.write(script_cases[script])
+                      script_file.write(script_cases[script])
                     count += 1
-                    logging.debug("script file '{0}' written".format(script))
+                    print("script file '{0}' written".format(script))
                     semaphore.acquire()
-                    assign_to_thread(script_path, slots, semaphore)
-    logging.info("Script generator: {0} test files have been written successfully".format(count))                                       
+                    assign_to_thread(script_path)
+    else:
+        for index, test_case in enumerate(test_cases):
+            new_indexes = copy.deepcopy(indexes)
+            new_indexes.append(index)
+            recursive_generation(new_indexes)
+
+
+def execute_and_generate_test():
+    """
+    Generate and execute at same time the tests
+    """
+    global count, slots
+    slots = init_slots()
+    sources.generate_scripts.remove_scripts()
+    recursive_generation([]) 
+    print("Script generator: {0} test files have been written successfully".format(count))                                                                      
                 
 
-def assign_to_thread(script_path, slots, semaphore):
-    """Assign a given script to a runner"""
+def assign_to_thread(script_path):
+    """
+    Assign a given script to a runner
+    """
+    global slots, semaphore
     index = get_available_slot(slots)
     if index == -1:
         logging.error("Trying to assign when no threads are available")
         exit()
     slots[index] = False
-    threading.Thread(target=consumer_thread, args=(script_path, configuration.packetdrill_command, configuration.target_command, semaphore, slots, index)).start()
+    threading.Thread(target=consumer_thread, args=(script_path, configuration.packetdrill_command, configuration.target_command, index)).start()
     
 
-
-
-def consumer_thread(script, packetdrill_command, target_command, semaphore, slots, index):
+def consumer_thread(script, packetdrill_command, target_command, index):
     """
     Thread to process a single script
     """
+    global slots, semaphore
     envs = {
-        interface_name_env: configuration.interface_placeholder.format(index)
+        interface_name_env: configuration.interface_placeholder.format(index  + configuration.initial_interface)
     }
-    logging.debug("Executing script '{0}' {1}".format(script, index))
+    print("Executing script '{0}' {1}".format(script, index))
     target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix,), "w")
     packetdrill_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + packetdrill_trace_suffix,), "w")
     target_process = subprocess.Popen(target_command, env=envs, stdout=target_output_file, stderr=target_output_file)
@@ -118,6 +140,7 @@ def init_slots():
         slots[i] = True
     return slots
 
+
 def get_available_slot(slots):
     """
     Get the first available slot
@@ -131,6 +154,9 @@ def get_available_slot(slots):
 
 
 def log_file(script, is_hang=False):
+    """
+    Log the script to a file
+    """
     message = ""
     path = None
     if is_hang:
@@ -141,6 +167,17 @@ def log_file(script, is_hang=False):
         path = configuration.crashing_directory
     logging.debug(message.format(script))
     shutil.copy(script, os.path.join(os.path.abspath(path), os.path.basename(script)))
+
+
+
+def increasing_indexes(indexes):
+    """
+    Check if a list of indexes are increasing
+    """
+    for i in range(len(indexes) - 1):
+        if indexes[i] >= indexes[i + 1]:
+            return False
+    return True
 
 
 
