@@ -20,3 +20,21 @@ target_command =    [
 
 # Interface placeholder
 interface_placeholder = 'tap{0}'
+
+# offset of the interface index
+interface_index_offset = 6
+
+# Base output directoty
+output_directory = 'freertos'
+
+# Directory to store crashes
+crashing_directory = 'freertos/crashes'
+
+# Directory to store hangings
+hanging_directory = 'freertos/hangings'
+
+# Directory to store log files with traces
+log_directory = 'freertos/traces'
+
+# Directory to store debugged traces
+debugged_directory = 'freertos/debugged_traces'

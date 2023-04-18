@@ -25,3 +25,20 @@ target_command =    [
 # Interface placeholder
 interface_placeholder = 'tap{0}'
 
+# offset of the interface index
+interface_index_offset = 0
+
+# Base output directoty
+output_directory = 'picotcp'
+
+# Directory to store crashes
+crashing_directory = 'picotcp/crashes'
+
+# Directory to store hangings
+hanging_directory = 'picotcp/hangings'
+
+# Directory to store log files with traces
+log_directory = 'picotcp/traces'
+
+# Directory to store debugged traces
+debugged_directory = 'picotcp/debugged_traces'

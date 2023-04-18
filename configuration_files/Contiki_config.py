@@ -26,3 +26,21 @@ target_command =    [
 # Interface placeholder
 interface_placeholder = 'tun{0}'
 
+# offset of the interface index
+interface_index_offset = 0
+
+# Base output directoty
+output_directory = 'contiki'
+
+# Directory to store crashes
+crashing_directory = 'contiki/crashes'
+
+# Directory to store hangings
+hanging_directory = 'contiki/hangings'
+
+# Directory to store log files with traces
+log_directory = 'contiki/traces'
+
+# Directory to store debugged traces
+debugged_directory = 'contiki/debugged_traces'
+

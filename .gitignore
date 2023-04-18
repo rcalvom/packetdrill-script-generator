@@ -4,7 +4,8 @@ success.log
 test.py
 plots/
 __pycache__/
-*_scripts/
+scripts/
+picotcp/
 *_output/
 Trace.dump
 test.pkt

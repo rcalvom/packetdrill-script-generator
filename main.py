@@ -16,9 +16,10 @@ from sources.execute_test import execute_test
 from sources.parallel_test_execution import execute_and_generate_test
 from sources.plot_stats import plot_stats
 from sources.clean_resources import clean_resources
+from sources.trace_deduplication import trace_deduplication
 
 
-def main(generate, execute, stats, clean):
+def main(generate, execute, stats, clean, deduplicate):
     """
     Main execution function. start the processes
     """
@@ -30,6 +31,8 @@ def main(generate, execute, stats, clean):
         generate_scripts(test_cases, configuration.templates_filenames)
     if not generate and execute: 
         execute_test(configuration.generated_folder, configuration.packetdrill_command, configuration.target_command, generate)
+    if deduplicate:
+        trace_deduplication()
     if stats: #TODO: Evaluate stats
         plot_stats()
 
@@ -42,9 +45,10 @@ if __name__ == '__main__':
     execute = False
     stats = False
     clean = False
+    deduplicate = False
     argument_list = sys.argv[1:]
-    options = 'ges'
-    long_options = ['generate', 'execute', 'stats', 'verbose', 'clean']
+    options = 'gesd'
+    long_options = ['generate', 'execute', 'stats', 'verbose', 'clean', 'deduplicate']
     try:
         debug = False
         arguments, values = getopt.getopt(argument_list, options, long_options)
@@ -59,7 +63,9 @@ if __name__ == '__main__':
                 debug = True
             elif current_argument in ('--clean'):
                 clean = True
+            elif current_argument in ('-d', '--deduplicate'):
+                deduplicate = True
         logging.basicConfig(format="%(message)s", level=logging.DEBUG if debug else logging.INFO)
-        main(generate, execute, stats, clean)
+        main(generate, execute, stats, clean, deduplicate)
     except getopt.error as err:
         logging.error(err)

@@ -49,7 +49,7 @@ def recursive_generation(indexes: list):
                     with open(script_path, "w") as script_file:
                       script_file.write(script_cases[script])
                     count += 1
-                    print("script file '{0}' written".format(script))
+                    logging.info("script file '{0}' written".format(script))
                     semaphore.acquire()
                     assign_to_thread(script_path)
     else:
@@ -67,7 +67,7 @@ def execute_and_generate_test():
     slots = init_slots()
     sources.generate_scripts.remove_scripts()
     recursive_generation([]) 
-    print("Script generator: {0} test files have been written successfully".format(count))                                                                      
+    logging.info("Script generator: {0} test files have been written successfully".format(count))                                                                      
                 
 
 def assign_to_thread(script_path):
@@ -89,9 +89,9 @@ def consumer_thread(script, packetdrill_command, target_command, index):
     """
     global slots, semaphore
     envs = {
-        interface_name_env: configuration.interface_placeholder.format(index  + configuration.initial_interface)
+        interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset)
     }
-    print("Executing script '{0}' {1}".format(script, index))
+    logging.info("Executing script '{0}' {1}".format(script, index))
     target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix,), "w")
     packetdrill_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + packetdrill_trace_suffix,), "w")
     target_process = subprocess.Popen(target_command, env=envs, stdout=target_output_file, stderr=target_output_file)

@@ -22,3 +22,20 @@ target_command =    [
 # Interface placeholder
 interface_placeholder = 'tap{0}'
 
+# offset of the interface index
+interface_index_offset = 12
+
+# Base output directoty
+output_directory = 'lwip'
+
+# Directory to store crashes
+crashing_directory = 'lwip/crashes'
+
+# Directory to store hangings
+hanging_directory = 'lwip/hangings'
+
+# Directory to store log files with traces
+log_directory = 'lwip/traces'
+
+# Directory to store debugged traces
+debugged_directory = 'lwip/debugged_traces'
