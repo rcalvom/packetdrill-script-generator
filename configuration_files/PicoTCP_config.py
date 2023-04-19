@@ -29,16 +29,16 @@ interface_placeholder = 'tap{0}'
 interface_index_offset = 0
 
 # Base output directoty
-output_directory = 'picotcp'
+output_directory = 'pico_output'
 
 # Directory to store crashes
-crashing_directory = 'picotcp/crashes'
+crashing_directory = 'pico_output/crashes'
 
 # Directory to store hangings
-hanging_directory = 'picotcp/hangings'
+hanging_directory = 'pico_output/hangings'
 
 # Directory to store log files with traces
-log_directory = 'picotcp/traces'
+log_directory = 'pico_output/traces'
 
 # Directory to store debugged traces
-debugged_directory = 'picotcp/debugged_traces'
+debugged_directory = 'pico_output/debugged_traces'

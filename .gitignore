@@ -6,6 +6,8 @@ plots/
 __pycache__/
 scripts/
 picotcp/
+contiki/
 *_output/
 Trace.dump
 test.pkt
+nohup.out

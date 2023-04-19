@@ -94,9 +94,6 @@ def remove_duplicates(directory):
                     filename = asan_trace.group(2)
                     line_number = asan_trace.group(3)
                     data = [log_number, filename, line_number]
-                    print("TRACES: ", traces_data)
-                    print("DATA: ", data)
-                    print("boolean: ", data in traces)
                     if data in traces_data:
                         os.remove(trace)
                         break
