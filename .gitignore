@@ -5,8 +5,11 @@ test.py
 plots/
 __pycache__/
 scripts/
-picotcp/
-contiki/
+pico*/
+contiki*/
+lwip*/
+freertos*/
+to_test/
 *_output/
 Trace.dump
 test.pkt

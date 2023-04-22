@@ -22,7 +22,7 @@ target_command =    [
 interface_placeholder = 'tap{0}'
 
 # offset of the interface index
-interface_index_offset = 6
+interface_index_offset = 0
 
 # Base output directoty
 output_directory = 'freertos'
