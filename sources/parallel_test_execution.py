@@ -45,11 +45,15 @@ def recursive_generation(indexes: list):
             for index, case in enumerate(single_cases):
                 script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
                 for script in script_cases:
+                    count += 1
+                    if count < configuration.start_test_count:
+                        continue
+                    if count >= configuration.end_test_count:
+                        continue
                     script_path = os.path.join(configuration.generated_folder, script)
                     with open(script_path, "w") as script_file:
                       script_file.write(script_cases[script])
-                    count += 1
-                    logging.info("script file '{0}' written".format(script))
+                    print("script file '{0}' written".format(script))
                     semaphore.acquire()
                     assign_to_thread(script_path)
     else:
@@ -123,7 +127,7 @@ def consumer_thread(script, packetdrill_command, target_command, index):
                 target_process.wait()
         target_output_file.close()
         packetdrill_output_file.close()
-        if not hang and not crash:
+        if not crash:
             os.remove(target_output_file.name)
             os.remove(packetdrill_output_file.name)    
         slots[index] = True 

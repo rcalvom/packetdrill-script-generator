@@ -93,43 +93,78 @@ test_cases = [
         ]
     },
     {
-        "name": "tcp_flags",
+        "name": "cwr_flag",
         "mutations" : [
             {
                 "field": "cwr_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "ece_flag",
+        "mutations" : [
             {
                 "field": "ece_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "urg_flag",
+        "mutations" : [
             {
                 "field": "urg_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "ack_flag",
+        "mutations" : [
             {
                 "field": "ack_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "psh_flag",
+        "mutations" : [
             {
                 "field": "psh_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "rst_flag",
+        "mutations" : [
             {
                 "field": "rst_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "syn_flag",
+        "mutations" : [
             {
                 "field": "syn_flag",
                 "operation": "replace",
                 "values": "all"
-            },
+            }
+        ]
+    },
+    {
+        "name": "fin_flag",
+        "mutations" : [
             {
                 "field": "fin_flag",
                 "operation": "replace",
