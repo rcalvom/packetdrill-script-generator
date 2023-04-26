@@ -38,13 +38,13 @@ target_command =    [
 interface_placeholder = 'tap{0}'
 
 # offset of the interface index
-interface_index_offset = 1
+interface_index_offset = 0
 
 # Start test count
 start_test_count = 0
 
 # End test count
-end_test_count = 175464
+end_test_count = 1869448
 
 # Base output directoty
 output_directory = 'lwip'

@@ -2,7 +2,7 @@
 
 # System
 import subprocess
-import pyinotify
+#import pyinotify
 import threading
 import logging
 import shutil
@@ -132,7 +132,7 @@ def sigint_handler(signal, frame):
     exit()
 
 
-class EventHandler(pyinotify.ProcessEvent):
+class EventHandler():#pyinotify.ProcessEvent):
     """
     Class to define the event handler
     """

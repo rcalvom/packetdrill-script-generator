@@ -37,14 +37,6 @@ test_cases = [
                     0x00000000,
                     0xFFFFFFFF
                 ]
-            },
-            {
-                "field": "syn_flag",
-                "operation": "replace",
-                "values": [
-                    0,
-                    1
-                ]
             }
         ]
     },
@@ -57,14 +49,6 @@ test_cases = [
                 "values": [
                     0x00000000,
                     0xFFFFFFFF
-                ]
-            },
-            {
-                "field": "ack_flag",
-                "operation": "replace",
-                "values": [
-                    0,
-                    1
                 ]
             }
         ]

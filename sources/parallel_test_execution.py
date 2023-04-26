@@ -56,16 +56,16 @@ def recursive_generation(indexes: list):
                     if count >= configuration.end_test_count:
                         continue
                     current_count += 1
-                    if current_count % 1000 == 0:
+                    if current_count % 100 == 0:
                         with open("stats.log", "w+") as f:
                             current_timestamp = datetime.datetime.fromtimestamp(time.time())
                             time_difference = current_timestamp - initial_timestamp
                             f.write("Total count: {0}\n".format(total_count))
                             f.write("Current count: {0}\n".format(current_count))
-                            f.write("Progress: {0}%\n".format(current_count / total_count * 100))
+                            f.write("Progress: {0:.2f} ({1} / {2})%\n".format(current_count / total_count * 100, current_count, total_count))
                             f.write("Initial timestamp: {0}\n".format(initial_timestamp))
                             f.write("Current timestamp: {0}\n".format(current_timestamp))
-                            f.write("Executing time: {0} hours, {1} minutes, {2}, seconds \n".format(time_difference.seconds // 3600, (time_difference.seconds % 3600) // 60, time_difference.seconds % 60))
+                            f.write("Executing time: {0} hours, {1} minutes, {2} seconds. \n".format(time_difference.seconds // 3600, (time_difference.seconds % 3600) // 60, time_difference.seconds % 60))
                     script_path = os.path.join(configuration.generated_folder, script)
                     with open(script_path, "w") as script_file:
                       script_file.write(script_cases[script])
@@ -86,7 +86,7 @@ def execute_and_generate_test():
     global count, total_count, slots, initial_timestamp
     initial_timestamp = datetime.datetime.fromtimestamp(time.time())
     slots = init_slots()
-    total_count = count_cases([])
+    count_cases([])
     sources.generate_scripts.remove_scripts()
     recursive_generation([]) 
     logging.info("Script generator: {0} test files have been written successfully".format(count))                                                                      

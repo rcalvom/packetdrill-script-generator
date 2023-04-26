@@ -29,8 +29,9 @@ def main(generate, execute, stats, clean, deduplicate):
         execute_and_generate_test()
     if generate and not execute:
         generate_scripts(test_cases, configuration.templates_filenames)
-    if not generate and execute: 
-        execute_test(configuration.generated_folder, configuration.packetdrill_command, configuration.target_command, generate)
+    if not generate and execute:
+        pass
+#        execute_test(configuration.generated_folder, configuration.packetdrill_command, configuration.target_command, generate)
     if deduplicate:
         trace_deduplication()
     if stats: #TODO: Evaluate stats
