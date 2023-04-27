@@ -111,6 +111,31 @@ header_fields = {
         "field": "trun_tcp",
         "size": 8
     },
+    "udp_src_port": {
+        "protocol": "udp",
+        "field": "src_port",
+        "size": 16
+    },
+    "udp_dst_port": {
+        "protocol": "udp",
+        "field": "dst_port",
+        "size": 16
+    },
+    "udp_len": {
+        "protocol": "udp",
+        "field": "udp_len",
+        "size": 16
+    },
+    "udp_checksum": {
+        "protocol": "udp",
+        "field": "checksum",
+        "size": 16
+    },
+    "trun_udp": {
+        "protocol": "udp",
+        "field": "trun_upd",
+        "size": 32
+    },
     "ipv4_version": {
         "protocol": "ipv4",
         "field": "version",

@@ -69,7 +69,7 @@ def recursive_generation(indexes: list):
                     script_path = os.path.join(configuration.generated_folder, script)
                     with open(script_path, "w") as script_file:
                       script_file.write(script_cases[script])
-                    print("script file '{0}' written".format(script))
+                    logging.info("script file '{0}' written".format(script))
                     semaphore.acquire()
                     assign_to_thread(script_path)
     else:
