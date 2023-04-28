@@ -6,6 +6,7 @@ import subprocess
 import datetime
 import logging
 import shutil
+import select
 import copy
 import time
 import os
@@ -32,6 +33,7 @@ total_count = 0
 initial_timestamp = None
 current_timestamp = None
 slots = {}
+target_slots = []
 
 
 def recursive_generation(indexes: list):
@@ -83,12 +85,14 @@ def execute_and_generate_test():
     """
     Generate and execute at same time the tests
     """
-    global count, total_count, slots, initial_timestamp
+    global count, total_count, slots, initial_timestamp, target_slots
     initial_timestamp = datetime.datetime.fromtimestamp(time.time())
     slots = init_slots()
+    target_slots = init_target_slots()
     count_cases([])
     sources.generate_scripts.remove_scripts()
     recursive_generation([]) 
+    kill_all_targets()
     logging.info("Script generator: {0} test files have been written successfully".format(count))                                                                      
                 
 
@@ -137,47 +141,47 @@ def consumer_thread(script, packetdrill_command, target_command, index):
     """
     Thread to process a single script
     """
-    global slots, semaphore
+    global slots, target_slots, semaphore
+    logging.info("Executing script '{0}' {1}".format(script, index))
     envs = {
         interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset)
     }
-    logging.info("Executing script '{0}' {1}".format(script, index))
-    target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix,), "w")
-    packetdrill_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + packetdrill_trace_suffix,), "w")
-    target_process = subprocess.Popen(target_command, env=envs, stdout=target_output_file, stderr=target_output_file)
+    if target_slots[index] is None or target_slots[index].poll() is not None:
+        pipe = subprocess.PIPE
+        target_slots[index] = subprocess.Popen(target_command, env=envs, stdout=pipe, stderr=pipe)
     hang = False
     crash = False
     try:
         command = copy.deepcopy(packetdrill_command)
         command.append(script)
-        subprocess.run(command, env=envs, timeout=target_timeout, stdout=packetdrill_output_file, stderr=packetdrill_output_file)
+        subprocess.run(command, env=envs, timeout=target_timeout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         time.sleep(target_timeout / 2)
     except subprocess.TimeoutExpired:
         logging.error("Timeout in packetdrill for file '{0}'".format(script))
         hang = True
-        if target_process.poll() is not None:
+        if target_slots[index].poll() is not None:
             crash = True
-            log_file(script)
+            log_file(index, script)
         else:
-            log_file(script, is_hang=True)
+            log_file(index, script, is_hang=True)
     finally:
-        if target_process.poll() is not None and hang is False:
-            log_file(script)
+        if target_slots[index].poll() is not None and hang is False:
             crash = True
-        if target_process.poll() is None:
-            target_process.terminate()
-            try:
-                target_process.wait(timeout=target_timeout)
-            except subprocess.TimeoutExpired:
-                target_process.kill()
-                target_process.wait()
-        target_output_file.close()
-        packetdrill_output_file.close()
+            log_file(index, script)
         if not crash:
-            os.remove(target_output_file.name)
-            os.remove(packetdrill_output_file.name)    
+            os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix)
         slots[index] = True 
         os.remove(script)
+        if hang:
+            target_slots[index].kill()
+        while select.select([target_slots[index].stdout], [], [], 0)[0]:
+            line = target_slots[index].stdout.readline()
+            if line == b'':
+                break
+        while select.select([target_slots[index].stderr], [], [], 0)[0]:
+            line = target_slots[index].stderr.readline()
+            if line == b'':
+                break
         semaphore.release()
 
 
@@ -188,6 +192,16 @@ def init_slots():
     slots = {}
     for i in range(configuration.number_runners):
         slots[i] = True
+    return slots
+
+
+def init_target_slots():
+    """
+    Initialize the targe slots dict
+    """
+    slots = []
+    for i in range(configuration.number_runners):
+        slots.append(None)
     return slots
 
 
@@ -203,10 +217,11 @@ def get_available_slot(slots):
     return index
 
 
-def log_file(script, is_hang=False):
+def log_file(index, script, is_hang=False):
     """
     Log the script to a file
     """
+    global target_slots
     message = ""
     path = None
     if is_hang:
@@ -215,9 +230,29 @@ def log_file(script, is_hang=False):
     else:
         message = "Crash on script '{0}'. "
         path = configuration.crashing_directory
+        file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix), "w")
+        target_slots[index].stdout.flush()
+        for line in target_slots[index].stdout: 
+            file.write(line.decode('utf-8'))
+        target_slots[index].stderr.flush()
+        for line in target_slots[index].stderr: 
+            file.write(line.decode('utf-8'))
+        file.flush()
+        file.close()
     logging.debug(message.format(script))
     shutil.copy(script, os.path.join(os.path.abspath(path), os.path.basename(script)))
 
+
+def kill_all_targets():
+    """ 
+    Kill all the targets 
+    """
+    global target_slots
+    for target in target_slots:
+        #if target.poll() is None:
+        
+            print("Target ", target)
+            target.kill()
 
 
 def increasing_indexes(indexes):
