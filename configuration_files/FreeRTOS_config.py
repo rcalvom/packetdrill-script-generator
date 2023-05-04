@@ -25,8 +25,14 @@ target_command =    [
 # Interface placeholder
 interface_placeholder = 'tap{0}'
 
-# offset of the interface index
+# Offset of the interface index
 interface_index_offset = 0
+
+# Start test count
+start_test_count = 0
+
+# End test count
+end_test_count = 99999999
 
 # Base output directoty
 output_directory = 'freertos'

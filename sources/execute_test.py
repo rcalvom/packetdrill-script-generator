@@ -1,177 +1,202 @@
 """ Functions to execute Packetdrill """
 
 # System
-import subprocess
-#import pyinotify
 import threading
+import subprocess
+import datetime
 import logging
 import shutil
-import signal
 import copy
 import time
 import os
 
-# Script Generator
+# Script generator
+import sources.generate_scripts
 import configuration
+import test_cases as tests
+
+# Constants
+interface_name_env = 'TAP_INTERFACE_NAME'
+packetdrill_trace_suffix = '.packetdrill.log'
+target_trace_suffix = '.target.log'
+target_timeout = 2.0
 
 
 # Variables
-target_process = None
+semaphore = threading.Semaphore(configuration.number_runners)
+templates = sources.generate_scripts.preload_templates(configuration.templates_filenames)
+test_cases = tests.test_cases
+count = 0
+current_count = 0
+total_count = 0
+initial_timestamp = None
+current_timestamp = None
+slots = {}
 
 
-def execute_test_async(folder, packetdrill_command, target_command, runner_available_event, generation_ended_event):
-    """
-    Execute script test using the target and packetdrill asynchronously
-    """
-    semaphore = threading.Semaphore(configuration.number_runners)
-    slots = ThreadSafeDict()
-    for i in range(configuration.number_runners):
-        slots.set(i, True)
-    while not generation_ended_event.is_set():
-        semaphore.acquire()
-        runner_available_event.set()
-        scripts = []
-        while len(scripts) == 0 and not generation_ended_event.is_set():
-            scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
-        index = -1
-        for i in range(configuration.number_runners):
-            if slots.get(i):
-                index = i
-                break
-        if len(scripts) == 0:
-            break
-        thread = threading.Thread(target=process_script_thread, args=(scripts[0], packetdrill_command, target_command, semaphore, index))
-        thread.start()
-
-
-def execute_test(folder, command, target):
-    """
-    Execute script test using the target and packetdrill
-    """
-    global target_process
-    signal.signal(signal.SIGINT, sigint_handler)
-    scripts = [os.path.abspath(os.path.join(folder, f)) for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+def execute_list_scripts(folder):
+    global count, total_count, current_count, templates, semaphore
+    scripts = os.listdir(folder)
     for script in scripts:
-        process_script(script, command, target)
-    if target_process is not None and target_process.poll() is None:
-        target_process.kill()
+        count += 1
+        if count < configuration.start_test_count:
+            continue
+        if count >= configuration.end_test_count:
+            continue
+        current_count += 1
+        if current_count % 100 == 0:
+            with open(os.path.join(configuration.output_directory, "stats.log"), "w+") as f:
+                current_timestamp = datetime.datetime.fromtimestamp(time.time())
+                time_difference = current_timestamp - initial_timestamp
+                f.write("*Execution in progress*\n")
+                f.write("Total count: {0}\n".format(total_count))
+                f.write("Current count: {0}\n".format(current_count))
+                f.write("Progress: {0:.2f}% ({1} / {2})\n".format(current_count / total_count * 100, current_count, total_count))
+                f.write("Initial timestamp: {0}\n".format(initial_timestamp))
+                f.write("Current timestamp: {0}\n".format(current_timestamp))
+                f.write("Executing time: {0} hours, {1} minutes, {2} seconds. \n".format(time_difference.seconds // 3600, (time_difference.seconds % 3600) // 60, time_difference.seconds % 60))
+        script_path = os.path.join(configuration.generated_folder, script)
+        semaphore.acquire() 
+        assign_to_thread(script_path)
 
 
-def process_script_thread(script, packetdrill_command, target_command, semaphore, index):
+def execute_and_generate_test():
+    """
+    Generate and execute at same time the tests
+    """
+    global count, total_count, slots, initial_timestamp
+    initial_timestamp = datetime.datetime.fromtimestamp(time.time())
+    slots = init_slots()
+    count_cases(configuration.generated_folder)
+    execute_list_scripts(configuration.generated_folder) 
+    with open(os.path.join(configuration.output_directory, "stats.log"), "w+") as f:
+        current_timestamp = datetime.datetime.fromtimestamp(time.time())
+        time_difference = current_timestamp - initial_timestamp
+        f.write("*Execution Finished*\n")
+        f.write("Total count: {0}\n".format(total_count))
+        f.write("Final count: {0}\n".format(current_count))
+        f.write("Progress: {0:.2f}% ({1} / {2})\n".format(current_count / total_count * 100, current_count, total_count))
+        f.write("Initial timestamp: {0}\n".format(initial_timestamp))
+        f.write("Final timestamp: {0}\n".format(current_timestamp))
+        f.write("Execution time: {0} hours, {1} minutes, {2} seconds. \n".format(time_difference.seconds // 3600, (time_difference.seconds % 3600) // 60, time_difference.seconds % 60))                                                                 
+                
+
+def count_cases(folder):
+    """
+    Count the number of files in a folder
+    """
+    global total_count
+    total_count = len(os.listdir(folder))
+
+
+def assign_to_thread(script_path):
+    """
+    Assign a given script to a runner
+    """
+    global slots, semaphore
+    index = get_available_slot(slots)
+    if index == -1:
+        logging.error("Trying to assign when no threads are available")
+        exit()
+    slots[index] = False
+    threading.Thread(target=consumer_thread, args=(script_path, configuration.packetdrill_command, configuration.target_command, index)).start()
+    
+
+def consumer_thread(script, packetdrill_command, target_command, index):
     """
     Thread to process a single script
     """
-    logging.debug("Executing script '{0}'".format(script))
-    envs = {'TAP_INTERFACE_NAME': 'tun{0}'.format(index)}
-    target_process = subprocess.Popen(target_command, env=envs, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    global slots, semaphore
+    envs = {
+        interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset)
+    }
+    logging.info("Executing script '{0}' {1}".format(script, index))
+    target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix,), "w")
+    packetdrill_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + packetdrill_trace_suffix,), "w")
+    target_process = subprocess.Popen(target_command, env=envs, stdout=target_output_file, stderr=target_output_file)
     hang = False
+    crash = False
     try:
         command = copy.deepcopy(packetdrill_command)
         command.append(script)
-        subprocess.run(command, env=envs, timeout=2, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, env=envs, timeout=target_timeout, stdout=packetdrill_output_file, stderr=packetdrill_output_file)
+        time.sleep(target_timeout / 2)
     except subprocess.TimeoutExpired:
         logging.error("Timeout in packetdrill for file '{0}'".format(script))
         hang = True
         if target_process.poll() is not None:
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
+            crash = True
+            log_file(script)
         else:
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.hanging_directory), os.path.basename(script)))
+            log_file(script, is_hang=True)
     finally:
-        time.sleep(1)
         if target_process.poll() is not None and hang is False:
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
+            log_file(script)
+            crash = True
         if target_process.poll() is None:
-            target_process.kill()           
+            target_process.terminate()
+            try:
+                target_process.wait(timeout=target_timeout)
+            except subprocess.TimeoutExpired:
+                target_process.kill()
+                target_process.wait()
+        target_output_file.close()
+        packetdrill_output_file.close()
+        if not crash:
+            os.remove(target_output_file.name)
+            os.remove(packetdrill_output_file.name)    
+        slots[index] = True 
         os.remove(script)
         semaphore.release()
 
-    
 
-def process_script(script, packetdrill_command, target_command):
+def init_slots():
     """
-    Process a single script
+    Initialize the slots dict
     """
-    global target_process
-    logging.debug("Executing script '{0}'".format(script))
-    hang = False
-    if target_process is None or target_process.poll() is not None:
-        target_process = subprocess.Popen(target_command, env={'TAP_INTERFACE_NAME': 'tap0'})
-        logging.debug("Target started")
-    try:
-        command = copy.deepcopy(packetdrill_command)
-        command.append(script)
-        print("Command: ", " ".join(command))
-        subprocess.run(command, env={'TAP_INTERFACE_NAME': 'tap0'}, timeout=2)
-    except subprocess.TimeoutExpired as exception:
-        logging.error("Timeout in packetdrill for file '{0}'".format(script))
-        hang = True
-        if target_process.poll() is not None:
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
-        else:
-            target_process.kill()
-            time.sleep(1)
-            shutil.copy(script, os.path.join(os.path.abspath(configuration.hanging_directory), os.path.basename(script)))
-    except Exception as exception:
-        logging.error(exception)
-        exit()
-    if target_process.poll() is not None and hang is False:
-        logging.debug("Target process stopped. Writing input")
-        shutil.copy(script, os.path.join(os.path.abspath(configuration.crashing_directory), os.path.basename(script)))
-    if target_process.poll() is not None:
-        time.sleep(2)
-    os.remove(script)
+    slots = {}
+    for i in range(configuration.number_runners):
+        slots[i] = True
+    return slots
 
-    
 
-def sigint_handler(signal, frame):
+def get_available_slot(slots):
     """
-    Callback for Ctrl+C command
+    Get the first available slot
     """
-    logging.log("Interrupting Execution...")
-    logging.log("Ctrl+C pressed. Signalling all threads to stop...")
-    exit()
+    index = -1
+    for i in range(configuration.number_runners):
+        if slots.get(i):
+            index = i
+            break
+    return index
 
 
-class EventHandler():#pyinotify.ProcessEvent):
+def log_file(script, is_hang=False):
     """
-    Class to define the event handler
+    Log the script to a file
     """
-    def process_IN_CREATE(self, event):
-        """
-        This method is called when a new file is created in the directory
-        """
-        # Logica para cada lanzar runners
-        pass
+    message = ""
+    path = None
+    if is_hang:
+        message = "Hang on script '{0}'. "
+        path = configuration.hanging_directory
+    else:
+        message = "Crash on script '{0}'. "
+        path = configuration.crashing_directory
+    logging.debug(message.format(script))
+    shutil.copy(script, os.path.join(os.path.abspath(path), os.path.basename(script)))
 
 
-class ThreadSafeDict():
-    
-    def __init__(self):
-        """
-        Constructor
-        """
-        self._dict = {}
-        self._lock = threading.Lock()
- 
 
-    def get(self, key):
-        """
-        get an element of the dict
-        """
-        with self._lock:
-            return self._dict[key]
-        
+def increasing_indexes(indexes):
+    """
+    Check if a list of indexes are increasing
+    """
+    for i in range(len(indexes) - 1):
+        if indexes[i] >= indexes[i + 1]:
+            return False
+    return True
 
-    def set(self, key, value):
-        """
-        Set an element of the dict
-        """
-        with self._lock:
-            self._dict[key] = value
- 
-    def length(self):
-        """
-        Return the length of the dict
-        """
-        with self._lock:
-            return len(self._dict)
+
+
