@@ -60,7 +60,7 @@ def execute_list_scripts(folder):
         assign_to_thread(script_path)
 
 
-def execute_and_generate_test():
+def execute_test():
     """
     Generate and execute at same time the tests
     """
