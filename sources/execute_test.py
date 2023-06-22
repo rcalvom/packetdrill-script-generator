@@ -108,7 +108,8 @@ def consumer_thread(script, packetdrill_command, target_command, index):
     """
     global slots, semaphore
     envs = {
-        interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset)
+        interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset),
+        "PORTABILITY_LAYER_PATH": "/home/doshi36/rtos-portability-layer"
     }
     logging.info("Executing script '{0}' {1}".format(script, index))
     target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix,), "w")
