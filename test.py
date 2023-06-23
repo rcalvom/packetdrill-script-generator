@@ -204,14 +204,5 @@ class MyTestCase(unittest.TestCase):
                            err_count += 1
                            
         self.assertEqual(err_count, 0)
-        
-        # self.assertGreater(len(generated_scripts),)
-        
-    # def test_generate_scripts(self):
-    
-    #     configuration.k = 1
-    #     self.test_scripts()
-        
-    #     configuration.k = 2
-    #     self.test_scripts()
+        self.assertEqual(len(generated_scripts), 896)
             
