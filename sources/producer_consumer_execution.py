@@ -71,7 +71,8 @@ def consumer_thread(script, packetdrill_command, target_command, semaphore, inde
     """
     global slots
     envs = {
-        'TAP_INTERFACE_NAME': 'tun{0}'.format(index)
+        'TAP_INTERFACE_NAME': 'tun{0}'.format(index),
+        "PORTABILITY_LAYER_PATH": "/home/rcalvome/Documents/app/rtos-portability-layer/portability_layer.so"
         }
     logging.debug("Executing script '{0}' {1}".format(script, index))
     target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + ".target.log",), "w")

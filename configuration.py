@@ -4,10 +4,11 @@
 # from configuration_files.FreeRTOS_config import *
 # from configuration_files.Contiki_config import *
 # from configuration_files.PicoTCP_config import *
-from configuration_files.lwIP_config import *
+#from configuration_files.lwIP_config import *
+from configuration_files.Zephyr_config import *
 
 # Number of test cases at same time
-k = 1
+k = 3
 
 # Number of runners
 number_runners = 25

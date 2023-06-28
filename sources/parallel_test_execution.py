@@ -150,7 +150,8 @@ def consumer_thread(script, packetdrill_command, target_command, index):
     """
     global slots, semaphore
     envs = {
-        interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset)
+        interface_name_env: configuration.interface_placeholder.format(index  + configuration.interface_index_offset),
+        "PORTABILITY_LAYER_PATH": "/home/rcalvome/Documents/app/rtos-portability-layer/portability_layer.so"
     }
     logging.info("Executing script '{0}' {1}".format(script, index))
     target_output_file = open(os.path.join(configuration.log_directory, os.path.basename(script) + target_trace_suffix,), "w")
@@ -162,7 +163,7 @@ def consumer_thread(script, packetdrill_command, target_command, index):
         command = copy.deepcopy(packetdrill_command)
         command.append(script)
         subprocess.run(command, env=envs, timeout=target_timeout, stdout=packetdrill_output_file, stderr=packetdrill_output_file)
-        time.sleep(target_timeout / 2)
+        time.sleep(target_timeout / 3)
     except subprocess.TimeoutExpired:
         logging.error("Timeout in packetdrill for file '{0}'".format(script))
         hang = True
