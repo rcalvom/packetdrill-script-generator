@@ -19,7 +19,8 @@ jobs:
         python-version: 3.x  # Adjust the Python version as needed
 
     - name: Install dependencies
-      run: pip install -r requirements.txt
+      # run: pip install -r requirements.txt
+      run: pwd
 
     - name: Run tests
       run: python -m unittest discover
