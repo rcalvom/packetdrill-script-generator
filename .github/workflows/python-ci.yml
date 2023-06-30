@@ -1,0 +1,31 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - unit_test  # Adjust this based on your branch name
+  pull_request:
+    branches:
+      - unit_test  # Adjust this based on your branch name
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x  # Adjust the Python version as needed
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run tests
+      run: python -m unittest discover
+
+    - name: Lint code
+      run: pylint test.py  # Replace 'your_module.py' with your module name or use 'python -m pylint your_package' for a package
+
+    - name: Code coverage
+      run: coverage run --source=test.py -m unittest discover && coverage report
