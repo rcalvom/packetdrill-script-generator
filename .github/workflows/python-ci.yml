@@ -26,7 +26,7 @@ jobs:
       run: python -m unittest discover
 
     - name: Lint code
-      run: pylint test.py  # Replace 'your_module.py' with your module name or use 'python -m pylint your_package' for a package
+      run: python3 test.py  # Replace 'your_module.py' with your module name or use 'python -m pylint your_package' for a package
 
     - name: Code coverage
       run: coverage run --source=test.py -m unittest discover && coverage report
